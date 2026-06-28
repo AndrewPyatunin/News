@@ -8,6 +8,6 @@ class AddToFavouritesUseCase(
 ) {
 
     suspend operator fun invoke(news: News) {
-        repository.addToFavourites(news)
+        return repository.addToFavourites(news)
     }
 }
