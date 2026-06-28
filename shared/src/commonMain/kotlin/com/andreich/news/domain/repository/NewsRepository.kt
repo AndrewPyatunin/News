@@ -11,5 +11,9 @@ interface NewsRepository {
 
     fun searchNews(param: String): Flow<List<News>>
 
+    fun getSingleNews(id: Int): Flow<News>
+
+    suspend fun removeFromFavourites(newsId: Int)
+
     suspend fun addToFavourites(news: News)
 }

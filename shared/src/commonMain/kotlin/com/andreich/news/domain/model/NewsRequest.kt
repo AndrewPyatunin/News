@@ -1,7 +1,11 @@
 package com.andreich.news.domain.model
 
-sealed interface NewsRequest {
-    object TopNews : NewsRequest
+import kotlinx.serialization.Serializable
 
+@Serializable
+sealed interface NewsRequest {
+    @Serializable
+    object TopNews : NewsRequest
+    @Serializable
     data class Search(val param: String) : NewsRequest
 }
