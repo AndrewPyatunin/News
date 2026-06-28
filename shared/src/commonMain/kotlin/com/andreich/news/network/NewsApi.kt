@@ -29,7 +29,6 @@ class NewsApi(
                     append(LANGUAGE, RU)
                 }
             }
-
         }.body()
     }
 

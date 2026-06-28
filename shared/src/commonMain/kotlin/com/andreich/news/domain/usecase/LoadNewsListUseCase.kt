@@ -4,7 +4,7 @@ import com.andreich.news.domain.model.News
 import com.andreich.news.domain.repository.NewsRepository
 import kotlinx.coroutines.flow.Flow
 
-class LoadNewsUseCase(
+class LoadNewsListUseCase(
     private val repository: NewsRepository
 ) {
 
