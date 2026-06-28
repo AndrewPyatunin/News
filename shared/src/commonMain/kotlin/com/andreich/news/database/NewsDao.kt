@@ -16,8 +16,11 @@ interface NewsDao {
     @Query("SELECT * FROM favorite_news")
     fun getFavorites(): Flow<List<FavoriteNewsEntity>>
 
-    @Query("SELECT * FROM cache_data")
-    suspend fun getCacheData(type: NewsRequest): CacheEntity
+    @Query("SELECT * FROM news WHERE :newsId = id LIMIT 1")
+    fun getSingleNews(newsId: Int): Flow<NewsEntity>
+
+    @Query("SELECT * FROM cache_data WHERE :type = type")
+    suspend fun getCacheData(type: NewsRequest): CacheEntity?
 
     @Query("SELECT * FROM news WHERE :param = '' OR title LIKE '%' || :param || '%' " +
             "OR description LIKE '%' || :param || '%'")
@@ -29,6 +32,12 @@ interface NewsDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFavorite(newsEntity: FavoriteNewsEntity)
 
+    @Query("DELETE FROM favorite_news WHERE id = :newsId")
+    suspend fun removeFromFavorite(newsId: Int)
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCacheTime(cacheEntity: CacheEntity)
+
+    @Query("SELECT DISTINCT title FROM news WHERE title LIKE :query || '%' LIMIT 7")
+    suspend fun getSuggestions(query: String): List<String>
 }
