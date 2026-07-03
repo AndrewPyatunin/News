@@ -1,5 +1,15 @@
+### About Application
 This is a Kotlin Multiplatform project targeting Android, iOS.
+This app give opportunity to load actual news for different categories, on russian or english languages.
+User can Search for news with different filters, also add news to favorites and open map with news sorted by city locations.
 
+### Used libraries 
+App based on **MVVM** architecture, using some MVI features, like: event, intent, state, for unidirectional data flow.
+Application uses clean architecture pattern to build layers like: domain, data, presentation, ui.
+Database **Room** act as single source of truth, **Ktor** used for api calls, **Koin** for dependency injection, **Coroutines** with **flow** for receiving data.
+Map is drown using **MapLibre**, for navigation in app used *Jetpack Compose Navigation*
+
+### Modules
 * [/iosApp](./iosApp/iosApp) contains an iOS application. Even if you’re sharing your UI with Compose Multiplatform,
   you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
 
@@ -13,6 +23,9 @@ This is a Kotlin Multiplatform project targeting Android, iOS.
     folder is the appropriate location.
 
 ### Running the apps
+
+Add API_KEY=your_api_key into local.properties file, this api_key could be taken from WorldNewsApi.com.
+But be aware, it give only 50 tokens in a day.
 
 Use the run configurations provided by the run widget in your IDE's toolbar. You can also use these commands and options:
 
