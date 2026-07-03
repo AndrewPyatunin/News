@@ -1,5 +1,6 @@
 package com.andreich.news.di
 
+import com.andreich.news.presentation.SettingsViewModel
 import com.andreich.news.presentation.newscitylist.NewsCityListViewModel
 import com.andreich.news.presentation.newsdetail.NewsDetailsViewModel
 import com.andreich.news.presentation.newsfavorite.NewsFavoriteViewModel
@@ -11,7 +12,7 @@ import org.koin.dsl.module
 
 val presentationModule = module {
     viewModel {
-        NewsListViewModel(get())
+        NewsListViewModel(get(), get(), get())
     }
     viewModel {
         NewsDetailsViewModel(get(), get(), get(), get())
@@ -27,5 +28,8 @@ val presentationModule = module {
     }
     viewModel {
         NewsCityListViewModel(get())
+    }
+    viewModel {
+        SettingsViewModel(get())
     }
 }

@@ -19,16 +19,22 @@ import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 
 @Composable
-fun MenuPopUpItem(alignment: Alignment = Alignment.TopCenter, onDismiss: () -> Unit, content: @Composable () -> Unit) {
-    Popup(alignment = alignment, onDismissRequest = { onDismiss() },
+fun MenuPopUpItem(
+    modifier: Modifier = Modifier
+        .padding(top = 80.dp),
+    alignment: Alignment = Alignment.TopCenter,
+    onDismiss: () -> Unit,
+    content: @Composable () -> Unit,
+) {
+    Popup(
+        alignment = alignment, onDismissRequest = { onDismiss() },
         properties = PopupProperties(
             focusable = true
         )
 
     ) {
         Card(
-            modifier = Modifier
-                .padding(top = 80.dp)
+            modifier = modifier
                 .fillMaxWidth()
                 .height(300.dp),
             elevation = CardDefaults.cardElevation(4.dp, focusedElevation = 8.dp),
@@ -45,7 +51,9 @@ fun TextHeader(text: String) {
     Text(
         text = text,
         fontSize = 22.sp,
-        modifier = Modifier.padding(horizontal = 8.dp).fillMaxWidth(),
+        modifier = Modifier
+            .padding(horizontal = 8.dp)
+            .fillMaxWidth(),
         textAlign = TextAlign.Left
     )
 }

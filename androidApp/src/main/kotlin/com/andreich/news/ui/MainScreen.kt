@@ -63,6 +63,7 @@ fun MainScreen() {
                 }
             }, actions = {
                 IconButton(onClick = {
+                    appBarState.value.onFilterClick?.let { it() }
                 }) {
                     Icon(
                         painterResource(R.drawable.menu_24px),

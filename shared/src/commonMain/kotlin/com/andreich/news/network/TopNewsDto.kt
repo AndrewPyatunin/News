@@ -19,5 +19,6 @@ data class TopNewsDto(
     val language: String? = null,
     @SerialName("source_country")
     val sourceCountry: String? = null,
-    val authors: List<String> = listOf()
+    val authors: List<String> = listOf(),
+    val sentiment: Double? = null
 )

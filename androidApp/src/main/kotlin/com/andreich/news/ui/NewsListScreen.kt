@@ -67,7 +67,7 @@ fun NewsListScreen(
     }
     if (state.menuExpanded) {
         MenuPopUpItem(
-            onDismiss = onDismiss, modifierCard = Modifier.padding(top = 8.dp),
+            onDismiss = onDismiss, modifier = Modifier.padding(top = 8.dp),
         ) {
             val countryUs = remember { mutableStateOf(true) }
             val languageEn = remember { mutableStateOf(true) }
