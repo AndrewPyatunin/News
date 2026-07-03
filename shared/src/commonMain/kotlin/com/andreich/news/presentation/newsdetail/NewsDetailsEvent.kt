@@ -6,5 +6,7 @@ sealed interface NewsDetailsEvent : UiEvent {
 
     class AddToFavoriteSuccess(val message: String) : NewsDetailsEvent
 
+    class RemoveFromFavoriteSuccess(val message: String) : NewsDetailsEvent
+
     class ShowError(val message: String) : NewsDetailsEvent
 }

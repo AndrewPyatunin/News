@@ -43,7 +43,6 @@ kotlin {
             implementation(libs.ktor.client.okhttp)
         }
         commonMain.dependencies {
-            implementation(libs.com.google.gson)
             implementation(libs.androidx.datastore.preferences)
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)

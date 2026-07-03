@@ -4,7 +4,9 @@ import com.andreich.news.presentation.core.UiIntent
 
 sealed interface NewsDetailsIntent : UiIntent {
 
-    object AddToFavorite : NewsDetailsIntent
+    class AddToFavorite(val message: String) : NewsDetailsIntent
+
+    class RemoveFromFavorite(val message: String) : NewsDetailsIntent
 
     class LoadNews(val id: Int) : NewsDetailsIntent
 

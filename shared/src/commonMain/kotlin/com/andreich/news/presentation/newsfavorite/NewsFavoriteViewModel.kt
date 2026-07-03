@@ -1,13 +1,14 @@
 package com.andreich.news.presentation.newsfavorite
 
-import com.andreich.news.domain.model.News
 import com.andreich.news.domain.usecase.AddToFavouritesUseCase
 import com.andreich.news.domain.usecase.LoadFavoritesNewsUseCase
 import com.andreich.news.domain.usecase.RemoveFromFavouritesUseCase
 import com.andreich.news.presentation.core.BaseViewModel
-import com.andreich.news.presentation.newsfavorite.NewsFavoriteEvent.*
+import com.andreich.news.presentation.newsfavorite.NewsFavoriteEvent.NavigateToNewsDetail
+import com.andreich.news.presentation.newsfavorite.NewsFavoriteEvent.ShowUndoRemove
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onEmpty
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 
@@ -24,6 +25,7 @@ class NewsFavoriteViewModel(
                 is NewsFavoriteIntent.ClickNews -> {
                     _events.emit(NavigateToNewsDetail(intent.news))
                 }
+
                 is NewsFavoriteIntent.RemoveNews -> {
                     removeFromFavouritesUseCase(intent.news.id)
                     _events.emit(ShowUndoRemove(intent.news))
@@ -35,6 +37,9 @@ class NewsFavoriteViewModel(
                         _state.update {
                             _state.value.copy(isLoading = true)
                         }
+                    }.onEmpty {
+                        _state.update { it.copy(isLoading = false) }
+                        _events.emit(NewsFavoriteEvent.ShowError("Новостей нет!"))
                     }.onEach { list ->
                         _state.update {
                             _state.value.copy(news = list, isLoading = false)
@@ -50,6 +55,7 @@ class NewsFavoriteViewModel(
     }
 
     override suspend fun onError(e: Throwable) {
+        _state.update { _state.value.copy(isLoading = false) }
         _events.emit(NewsFavoriteEvent.ShowError(e.message.orEmpty()))
     }
 
