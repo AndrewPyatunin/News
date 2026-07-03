@@ -8,15 +8,16 @@ import com.andreich.news.network.NewsDto
 fun NewsEntity.toDomain(): News {
     return News(
         id = id,
-        author = author,
-        title = title,
-        description = description,
+        author = author.decodeNumericEntities(),
+        title = title.decodeNumericEntities(),
+        description = description.decodeNumericEntities(),
         imageUrl = imageUrl,
         url = url,
-        content = content,
+        content = content.decodeNumericEntities(),
         publishedAt = publishedAt,
         category = category,
-        sourceCountry = sourceCountry
+        sourceCountry = sourceCountry,
+        language = language
     )
 }
 
@@ -31,7 +32,8 @@ fun NewsDto.toDomain(): News {
         content = content,
         publishedAt = publishedAt,
         category = category,
-        sourceCountry = "" //sourceCountry
+        sourceCountry = "sourceCountry",
+        language = "language"
     )
 }
 
@@ -47,7 +49,8 @@ fun NewsDto.toEntity(): NewsEntity {
         publishedAt = publishedAt,
         category = category,
         sourceCountry = "",//sourceCountry
-        requestKey = ""
+        requestKey = "",
+        language = ""
     )
 }
 
@@ -63,7 +66,8 @@ fun News.toEntity(): NewsEntity {
         publishedAt = publishedAt,
         category = category,
         sourceCountry = sourceCountry,
-        requestKey = ""
+        requestKey = "",
+        language = language
     )
 }
 
@@ -78,7 +82,8 @@ fun FavoriteNewsEntity.toNews(): News {
         content = content,
         publishedAt = publishedAt,
         category = category,
-        sourceCountry = sourceCountry
+        sourceCountry = sourceCountry,
+        language = language
     )
 }
 
@@ -94,6 +99,13 @@ fun News.toFavoriteEntity(): FavoriteNewsEntity {
         publishedAt = publishedAt,
         category = category,
         sourceCountry = sourceCountry,
+        language = language,
         requestKey = ""
     )
 }
+
+internal fun String.decodeNumericEntities(): String =
+    replace(Regex("&#(\\d+);")) { match ->
+        val codePoint = match.groupValues[1].toIntOrNull()
+        codePoint?.toChar()?.toString() ?: match.value
+    }

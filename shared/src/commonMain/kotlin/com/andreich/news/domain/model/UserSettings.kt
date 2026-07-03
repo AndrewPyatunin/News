@@ -1,16 +1,16 @@
 package com.andreich.news.domain.model
 
 data class UserSettings(
-    val country: Country,
-    val language: Language,
+    val country: Country = Country.US,
+    val language: Language = Language.EN,
     val darkTheme: Boolean = false
 )
 
 
-enum class Country(val country: String) {
-    RUSSIA("ru"), USA("us")
+enum class Country {
+    RU, US
 }
 
-enum class Language(val language: String) {
-    RUSSIAN("ru"), ENGLISH("en")
+enum class Language {
+    RU, EN
 }

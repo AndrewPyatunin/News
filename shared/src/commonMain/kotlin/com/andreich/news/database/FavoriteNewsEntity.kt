@@ -16,5 +16,6 @@ data class FavoriteNewsEntity(
     val content: String,
     val publishedAt: String,
     val category: String,
-    val sourceCountry: String
+    val sourceCountry: String,
+    val language: String
 )

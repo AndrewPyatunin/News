@@ -65,61 +65,67 @@ fun NewsListScreen(
             onNextPageLoad()
         }
     }
-    MenuPopUpItem(onDismiss = onDismiss) {
-        val countryUs = remember { mutableStateOf(true) }
-        val languageEn = remember { mutableStateOf(true) }
-        val themeDark = remember { mutableStateOf(true) }
-        Column(modifier = Modifier.fillMaxSize()) {
-            TextHeader(stringResource(R.string.news_country))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                TextContent(stringResource(R.string.russia))
-                Switch(
-                    checked = countryUs.value,
-                    onCheckedChange = {
-                        countryUs.value = it
-                    }
-                )
-                TextContent(stringResource(R.string.us))
-            }
-            HorizontalDivider()
-            TextHeader(stringResource(R.string.response_language))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                TextContent(stringResource(R.string.russian))
-                Switch(
-                    checked = languageEn.value,
-                    onCheckedChange = {
-                        languageEn.value = it
-                    }
-                )
-                TextContent(stringResource(R.string.english))
-            }
-            HorizontalDivider()
-            TextHeader(stringResource(R.string.response_language))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                TextContent(stringResource(R.string.light))
-                Switch(
-                    checked = themeDark.value,
-                    onCheckedChange = {
-                        themeDark.value = it
-                    }
-                )
-                TextContent(stringResource(R.string.dark))
-            }
-            Button(modifier = Modifier
-                .padding(horizontal = 4.dp)
-                .fillMaxWidth(), onClick = {
-                onSaveConfigClick(
-                    UserSettings(
-                        country = if (countryUs.value) Country.USA else Country.RUSSIA,
-                        language = if (languageEn.value) Language.ENGLISH else Language.RUSSIAN,
-                        darkTheme = themeDark.value
+    if (state.menuExpanded) {
+        MenuPopUpItem(
+            onDismiss = onDismiss, modifierCard = Modifier.padding(top = 8.dp),
+        ) {
+            val countryUs = remember { mutableStateOf(true) }
+            val languageEn = remember { mutableStateOf(true) }
+            val themeDark = remember { mutableStateOf(true) }
+            Column(modifier = Modifier.fillMaxSize()) {
+                TextHeader(stringResource(R.string.news_country))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    TextContent(stringResource(R.string.russia))
+                    Switch(
+                        checked = countryUs.value,
+                        onCheckedChange = {
+                            countryUs.value = it
+                        }
                     )
-                )
-            }) {
-                TextHeader(stringResource(R.string.configure))
+                    TextContent(stringResource(R.string.us))
+                }
+                HorizontalDivider()
+                TextHeader(stringResource(R.string.response_language))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    TextContent(stringResource(R.string.russian))
+                    Switch(
+                        checked = languageEn.value,
+                        onCheckedChange = {
+                            languageEn.value = it
+                        }
+                    )
+                    TextContent(stringResource(R.string.english))
+                }
+                HorizontalDivider()
+                TextHeader(stringResource(R.string.theme))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    TextContent(stringResource(R.string.light))
+                    Switch(
+                        checked = themeDark.value,
+                        onCheckedChange = {
+                            themeDark.value = it
+                        }
+                    )
+                    TextContent(stringResource(R.string.dark))
+                }
+                Button(
+                    modifier = Modifier
+                        .padding(horizontal = 4.dp)
+                        .fillMaxWidth(), onClick = {
+                        onSaveConfigClick(
+                            UserSettings(
+                                country = if (countryUs.value) Country.US else Country.RU,
+                                language = if (languageEn.value) Language.EN else Language.RU,
+                                darkTheme = themeDark.value
+                            )
+                        )
+                    }) {
+                    TextHeader(stringResource(R.string.configure))
+                }
             }
         }
     }
+
     LazyColumn(
         Modifier.background(MaterialTheme.colorScheme.background),
         state = lazyListState
@@ -164,6 +170,7 @@ fun NewsListRoute(
     val state by viewModel.state.collectAsState()
 
     LaunchedEffect(Unit) {
+        viewModel.sendIntent(NewsListIntent.LoadConfiguration)
         onSetAppBarState(
             AppBarState(
                 showFilter = state.menuExpanded,
@@ -187,13 +194,15 @@ fun NewsListRoute(
         }
     }
 
-    NewsListScreen(state = state, onClickNewsListener = {
-        viewModel.sendIntent(NewsListIntent.NewsClick(it))
-    }, onNextPageLoad = {
-        viewModel.sendIntent(NewsListIntent.LoadNextPage)
-    }, onDismiss = {
-        viewModel.sendIntent(NewsListIntent.ShowMenu)
-    },
+    NewsListScreen(
+        state = state,
+        onClickNewsListener = {
+            viewModel.sendIntent(NewsListIntent.NewsClick(it))
+        }, onNextPageLoad = {
+            viewModel.sendIntent(NewsListIntent.LoadNextPage)
+        }, onDismiss = {
+            viewModel.sendIntent(NewsListIntent.ShowMenu)
+        },
         onSaveConfigClick = {
             viewModel.sendIntent(NewsListIntent.ConfigureSettings(it))
         })

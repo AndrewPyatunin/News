@@ -10,8 +10,11 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface NewsDao {
 
+    @Query("SELECT * FROM news ORDER BY publishedAt DESC")
+    suspend fun getNewsList(): List<NewsEntity>
+
     @Query("SELECT * FROM news")
-    suspend fun getNews(): List<NewsEntity>
+    fun getNewsFlow(): Flow<List<NewsEntity>>
 
     @Query("SELECT * FROM favorite_news")
     fun getFavorites(): Flow<List<FavoriteNewsEntity>>
@@ -19,12 +22,25 @@ interface NewsDao {
     @Query("SELECT * FROM news WHERE :newsId = id LIMIT 1")
     fun getSingleNews(newsId: Int): Flow<NewsEntity>
 
+    @Query("SELECT * FROM news WHERE id in (:ids)")
+    fun getListNewsByIds(ids: List<Int>): Flow<List<NewsEntity>>
+
     @Query("SELECT * FROM cache_data WHERE :type = type")
     suspend fun getCacheData(type: NewsRequest): CacheEntity?
 
-    @Query("SELECT * FROM news WHERE :param = '' OR title LIKE '%' || :param || '%' " +
-            "OR description LIKE '%' || :param || '%'")
-    suspend fun getSearchedNews(param: String): List<NewsEntity>
+    @Query(
+        "SELECT * FROM news WHERE (:param = '' OR title LIKE '%' || :param || '%') " +
+                "OR (description LIKE '%' || :param || '%') AND (sourceCountry LIKE '%' || :country || '%' OR :country IS NULL)" +
+                "AND (language LIKE '%' || :language || '%' OR :language IS NULL) " +
+                "AND (:category = category OR :category IS NULL) AND (:location = sourceCountry OR :location IS NULL)"
+    )
+    suspend fun getSearchedNews(
+        param: String,
+        language: String?,
+        country: String?,
+        category: String?,
+        location: String?
+    ): List<NewsEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertNews(news: List<NewsEntity>)

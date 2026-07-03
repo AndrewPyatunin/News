@@ -2,6 +2,7 @@ package com.andreich.news.di
 
 import com.andreich.news.domain.usecase.AddToFavouritesUseCase
 import com.andreich.news.domain.usecase.GetSuggestionsUseCase
+import com.andreich.news.domain.usecase.GetUserSettingsUseCase
 import com.andreich.news.domain.usecase.LoadFavoritesNewsUseCase
 import com.andreich.news.domain.usecase.LoadNewsByIdsUseCase
 import com.andreich.news.domain.usecase.LoadNewsListUseCase
@@ -10,6 +11,7 @@ import com.andreich.news.domain.usecase.ObserveCitiesUseCase
 import com.andreich.news.domain.usecase.RemoveFromFavouritesUseCase
 import com.andreich.news.domain.usecase.SaveSearchQueryUseCase
 import com.andreich.news.domain.usecase.SearchNewsUseCase
+import com.andreich.news.domain.usecase.UpdateUserSettingsUseCase
 import org.koin.dsl.module
 
 val domainModule = module {
@@ -42,5 +44,11 @@ val domainModule = module {
     }
     factory {
         LoadNewsByIdsUseCase(get())
+    }
+    factory {
+        GetUserSettingsUseCase(get())
+    }
+    factory {
+        UpdateUserSettingsUseCase(get())
     }
 }

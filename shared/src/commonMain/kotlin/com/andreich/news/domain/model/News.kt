@@ -13,5 +13,6 @@ data class News(
     val content: String,
     val publishedAt: String,
     val category: String,
-    val sourceCountry: String
+    val sourceCountry: String,
+    val language: String
 )

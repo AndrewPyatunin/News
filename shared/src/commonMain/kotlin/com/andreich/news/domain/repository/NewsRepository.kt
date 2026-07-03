@@ -1,6 +1,7 @@
 package com.andreich.news.domain.repository
 
 import com.andreich.news.domain.model.News
+import com.andreich.news.domain.model.ParamsFilter
 import kotlinx.coroutines.flow.Flow
 
 interface NewsRepository {
@@ -9,7 +10,9 @@ interface NewsRepository {
 
     fun getFavorites(): Flow<List<News>>
 
-    fun searchNews(param: String): Flow<List<News>>
+    fun searchNews(param: String, paramsFilter: ParamsFilter? = null): Flow<List<News>>
+
+    fun getNewsListByIds(ids: List<Int>): Flow<List<News>>
 
     fun getSingleNews(id: Int): Flow<News>
 
