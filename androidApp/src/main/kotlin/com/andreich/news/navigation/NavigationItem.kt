@@ -10,25 +10,25 @@ sealed class NavigationItem(
 
     object Home: NavigationItem(
         NavDestinations.HomeGraph,
-        R.string.app_name,
+        R.string.home,
         R.drawable.home_24px
     )
 
     object Search: NavigationItem(
         NavDestinations.SearchGraph,
-        R.string.app_name,
+        R.string.search,
         R.drawable.search_24px
     )
 
     object NewsMap: NavigationItem(
         NavDestinations.MapGraph,
-        R.string.app_name,
+        R.string.map,
         R.drawable.file_map_24px
     )
 
     object NewsFavorite: NavigationItem(
         NavDestinations.FavoriteGraph,
-        R.string.app_name,
+        R.string.favorite,
         R.drawable.favorite_24px
     )
 }

@@ -21,6 +21,9 @@ sealed interface NavDestinations {
     data object NewsMap : NavDestinations
 
     @Serializable
+    data class NewsCityList(val newsIds: List<Int>) : NavDestinations
+
+    @Serializable
     data object HomeGraph : NavDestinations
 
     @Serializable

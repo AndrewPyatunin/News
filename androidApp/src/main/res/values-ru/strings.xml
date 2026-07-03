@@ -1,17 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">News</string>
-    <string name="home">Home</string>
-    <string name="search">Search</string>
-    <string name="map">Map</string>
-    <string name="favorite">Favorite</string>
-    <string name="published_at">Published at:\n %1$s</string>
-    <string name="author">Author:\n %1$s</string>
-    <string name="remove_success">Remove success</string>
-    <string name="news_removed">News removed</string>
-    <string name="undo">Undo</string>
-    <string name="remove">Remove</string>
-    <string name="added_to_favorite">News added to favorite</string>
-    <string name="removed_from_favorite">News removed from favorite</string>
+    <string name="app_name">Новости</string>
+    <string name="home">Главная</string>
+    <string name="search">Поиск</string>
+    <string name="map">Карта</string>
+    <string name="favorite">Избранное</string>
+    <string name="published_at">Опубликовано:\n %1$s</string>
+    <string name="author">Автор:\n %1$s</string>
+    <string name="remove_success">Удаление успешно</string>
+    <string name="news_removed">Новость удалена</string>
+    <string name="undo">Отмена</string>
+    <string name="remove">Удалить</string>
+    <string name="added_to_favorite">Новость добавлена в избранное</string>
+    <string name="removed_from_favorite">Новость удалена из избранного</string>
     <string name="english">Английский</string>
     <string name="russian">Русский</string>
     <string name="us">США</string>
@@ -29,7 +30,7 @@
     <string name="technology">Технологии</string>
     <string name="health">Здоровье</string>
     <string name="science">Наука</string>
-    <string name="light">Light</string>
-    <string name="dark">Dark</string>
+    <string name="light">light</string>
+    <string name="dark">dark</string>
     <string name="configure">Применить</string>
 </resources>

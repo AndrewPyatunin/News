@@ -15,7 +15,11 @@ class NewsApp : Application() {
         val apiKey = BuildConfig.API_KEY
         startKoin {
             modules(
-                databaseModule(applicationContext), dataModule, dataStoreModule(applicationContext), domainModule, networkModule(apiKey),
+                databaseModule(applicationContext),
+                dataModule(applicationContext),
+                dataStoreModule(applicationContext),
+                domainModule,
+                networkModule(apiKey),
                 presentationModule
             )
         }

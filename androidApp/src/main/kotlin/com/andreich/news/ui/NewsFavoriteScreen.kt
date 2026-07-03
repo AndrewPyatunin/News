@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.SwipeToDismissBox
@@ -20,8 +21,10 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.andreich.news.R
 import com.andreich.news.domain.model.News
 import com.andreich.news.ext.NewsItem
 import com.andreich.news.presentation.newsfavorite.NewsFavoriteEvent
@@ -39,7 +42,9 @@ fun NewsFavoriteRoute(
 ) {
     val viewModel: NewsFavoriteViewModel = koinViewModel()
     val state by viewModel.state.collectAsState()
-
+    val messageError = stringResource(R.string.remove_success)
+    val removeMessage = stringResource(R.string.news_removed)
+    val undoLabel = stringResource(R.string.undo)
 
     LaunchedEffect(Unit) {
         viewModel.sendIntent(NewsFavoriteIntent.LoadFavourites)
@@ -48,17 +53,19 @@ fun NewsFavoriteRoute(
                 is NewsFavoriteEvent.NavigateToNewsDetail -> {
                     onNavigateToNewsDetails(it.news.id)
                 }
+
                 NewsFavoriteEvent.RemoveSuccess -> {
-                    snackbarHostState.showSnackbar(message = "Remove success")
+                    snackbarHostState.showSnackbar(message = messageError)
                 }
+
                 is NewsFavoriteEvent.ShowError -> {
                     snackbarHostState.showSnackbar(message = it.message)
                 }
 
                 is NewsFavoriteEvent.ShowUndoRemove -> {
                     val result = snackbarHostState.showSnackbar(
-                        message = "News removed",
-                        actionLabel = "Undo",
+                        message = removeMessage,
+                        actionLabel = undoLabel,
                         withDismissAction = true
                     )
 
@@ -79,34 +86,52 @@ fun NewsFavoriteRoute(
 }
 
 @Composable
-fun NewsFavoriteScreen(state: NewsFavoriteState, onRemoveNews: (News) -> Unit, onNewsClick: (News) -> Unit) {
-        LazyColumn(Modifier.fillMaxSize()) {
-            items(state.news, key = { it.id }) { news ->
-                val dismissState = key(news.id) { rememberSwipeToDismissBoxState() }
-                LaunchedEffect(dismissState.currentValue) {
-                    snapshotFlow { dismissState.currentValue }
-                        .distinctUntilChanged()
-                        .filter { it == SwipeToDismissBoxValue.StartToEnd }
-                        .collect {
-                            onRemoveNews(news)
-                            dismissState.snapTo(SwipeToDismissBoxValue.Settled)
-                        }
+fun NewsFavoriteScreen(
+    state: NewsFavoriteState,
+    onRemoveNews: (News) -> Unit,
+    onNewsClick: (News) -> Unit
+) {
+    LazyColumn(
+        Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        items(state.news, key = { it.id }) { news ->
+            val dismissState = key(news.id) { rememberSwipeToDismissBoxState() }
+            LaunchedEffect(dismissState.currentValue) {
+                snapshotFlow { dismissState.currentValue }
+                    .distinctUntilChanged()
+                    .filter { it == SwipeToDismissBoxValue.StartToEnd }
+                    .collect {
+                        onRemoveNews(news)
+                        dismissState.snapTo(SwipeToDismissBoxValue.Settled)
+                    }
+            }
+            SwipeToDismissBox(
+                state = dismissState,
+                enableDismissFromStartToEnd = true,
+                enableDismissFromEndToStart = false,
+                backgroundContent = {
+                    Box(
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .fillMaxSize()
+                            .background(Color.Gray)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.remove),
+                            fontSize = 24.sp,
+                            color = Color.Black
+                        )
+                    }
                 }
-                SwipeToDismissBox(
-                    state = dismissState,
-                    enableDismissFromStartToEnd = true,
-                    enableDismissFromEndToStart = false,
-                    backgroundContent = {
-                        Box(modifier = Modifier.padding(16.dp).fillMaxSize().background(Color.Gray)) {
-                            Text(text = "Удалить", fontSize = 24.sp, color = Color.Black)
-                        }
-                    }
-                ) {
-                    NewsItem(news) {
-                        onNewsClick(it)
-                    }
+            ) {
+                NewsItem(news) {
+                    onNewsClick(it)
                 }
             }
         }
+
+    }
 }
 
