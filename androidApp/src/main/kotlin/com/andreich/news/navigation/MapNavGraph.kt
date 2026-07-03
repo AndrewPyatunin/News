@@ -8,11 +8,16 @@ import androidx.navigation.toRoute
 
 fun NavGraphBuilder.mapNavGraph(
     newsDetailsContent: @Composable (Int) -> Unit,
-    newsMapContent: @Composable () -> Unit
+    newsMapContent: @Composable () -> Unit,
+    newsCityListContent: @Composable (List<Int>) -> Unit
 ) {
     navigation<NavDestinations.MapGraph>(startDestination = NavDestinations.NewsMap) {
         composable<NavDestinations.NewsMap> {
             newsMapContent()
+        }
+        composable<NavDestinations.NewsCityList> { backStackEntry ->
+            val args = backStackEntry.toRoute<NavDestinations.NewsCityList>()
+            newsCityListContent(args.newsIds)
         }
         composable<NavDestinations.NewsDetails> { backStackEntry ->
             val args = backStackEntry.toRoute<NavDestinations.NewsDetails>()
