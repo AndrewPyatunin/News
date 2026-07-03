@@ -5,29 +5,31 @@ import com.andreich.news.domain.model.News
 fun SearchNewsDto.toNews(): News {
     return News(
         id = id,
-        author = author ?: "",
-        title = title ?: "",
+        author = author?.decodeNumericEntities() ?: "",
+        title = title?.decodeNumericEntities() ?: "",
+        description = summary?.decodeNumericEntities() ?: "",
         imageUrl = image ?: "",
         url = url ?: "",
-        content = text ?: "",
+        content = text?.decodeNumericEntities() ?: "",
         publishedAt = publishDate ?: "",
         category = category ?: "",
-        description = summary ?: "",
-        sourceCountry = sourceCountry ?: ""
+        sourceCountry = sourceCountry ?: "",
+        language = language ?: ""
     )
 }
 
 fun TopNewsDto.toNews(): News {
     return News(
         id = id,
-        author = author ?: "",
-        title = title ?: "",
+        author = author?.decodeNumericEntities() ?: "",
+        title = title?.decodeNumericEntities() ?: "",
+        description = summary?.decodeNumericEntities() ?: "",
         imageUrl = image ?: "",
         url = url ?: "",
-        content = text ?: "",
+        content = text?.decodeNumericEntities() ?: "",
         publishedAt = publishDate ?: "",
         category = category ?: "",
         sourceCountry = sourceCountry ?: "",
-        description = summary ?: ""
+        language = language ?: ""
     )
 }

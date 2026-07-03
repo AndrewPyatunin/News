@@ -29,11 +29,16 @@ dependencies {
 
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.serialization.kotlinx.json)
 
     implementation(libs.koin.compose.viewmodel)
     implementation(libs.koin.compose)
     implementation(libs.koin.core)
     implementation(libs.koin.android)
+
+    implementation(libs.org.maplibre.compose)
+    implementation(libs.org.maplibre.android)
+    implementation(libs.kotlinx.collections.immutable)
 
     implementation(libs.compose.uiToolingPreview)
     debugImplementation(libs.compose.uiTooling)

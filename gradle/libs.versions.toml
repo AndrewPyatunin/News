@@ -25,7 +25,14 @@ navigation = "2.9.8"
 datastore = "1.2.1"
 uiGraphics = "1.11.3"
 gson = "2.14.0"
-
+googleMaps = "4.5.0"
+googleMapsKtx = "6.0.1"
+googleMapsCompose = "8.3.0"
+osmbonus = "6.9.0"
+osmdroid = "6.1.20"
+maplibre = "13.3.1"
+maplibreCompose = "0.13.0"
+kotlinxImmutable = "0.5.0"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -70,7 +77,9 @@ koin-androidx-viewmodel = { module = "io.insert-koin:koin-androidx-viewmodel", v
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koin" }
 koin-test = { module = "io.insert-koin:koin-test", version.ref = "koin" }
 androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics", version.ref = "uiGraphics" }
-com-google-gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+org-maplibre-android = { module = "org.maplibre.gl:android-sdk", version.ref = "maplibre" }
+org-maplibre-compose = { module = "org.maplibre.compose:maplibre-compose", version.ref = "maplibreCompose" }
+kotlinx-collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "kotlinxImmutable" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
