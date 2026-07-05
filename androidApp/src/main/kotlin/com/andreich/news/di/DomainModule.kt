@@ -1,6 +1,7 @@
 package com.andreich.news.di
 
 import com.andreich.news.domain.usecase.AddToFavouritesUseCase
+import com.andreich.news.domain.usecase.GetNewsSuggestionsUseCase
 import com.andreich.news.domain.usecase.GetSuggestionsUseCase
 import com.andreich.news.domain.usecase.GetUserSettingsUseCase
 import com.andreich.news.domain.usecase.LoadFavoritesNewsUseCase
@@ -58,5 +59,8 @@ val domainModule = module {
     }
     factory {
         UpdateSearchNewsUseCase(get())
+    }
+    factory {
+        GetNewsSuggestionsUseCase(get())
     }
 }

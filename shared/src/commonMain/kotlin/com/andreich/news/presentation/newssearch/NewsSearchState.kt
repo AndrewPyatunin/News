@@ -11,5 +11,6 @@ data class NewsSearchState(
     val suggestions: List<String> = emptyList(),
     val expanded: Boolean = false,
     val popUpMenuShowed: Boolean = false,
-    val paramsFilter: ParamsFilter? = null
+    val paramsFilter: ParamsFilter? = null,
+    val newsSuggestions: List<String> = emptyList()
 ) : UiState

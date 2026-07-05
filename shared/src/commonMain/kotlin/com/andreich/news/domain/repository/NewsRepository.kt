@@ -23,5 +23,7 @@ interface NewsRepository {
 
     suspend fun removeFromFavourites(newsId: Int)
 
-    suspend fun addToFavourites(news: News)
+    suspend fun addToFavourites(newsId: Int)
+
+    suspend fun getNewsSuggestions(query: String): List<String>
 }

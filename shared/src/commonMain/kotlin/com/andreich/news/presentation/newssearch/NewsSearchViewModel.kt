@@ -2,6 +2,7 @@ package com.andreich.news.presentation.newssearch
 
 import com.andreich.news.domain.model.ParamsFilter
 import com.andreich.news.domain.model.RequestResult
+import com.andreich.news.domain.usecase.GetNewsSuggestionsUseCase
 import com.andreich.news.domain.usecase.GetSuggestionsUseCase
 import com.andreich.news.domain.usecase.SaveSearchQueryUseCase
 import com.andreich.news.domain.usecase.SearchNewsUseCase
@@ -21,6 +22,7 @@ class NewsSearchViewModel(
     private val searchNewsUseCase: SearchNewsUseCase,
     private val saveSearchUseCase: SaveSearchQueryUseCase,
     private val updateSearchNewsUseCase: UpdateSearchNewsUseCase,
+    private val getNewsSuggestionsUseCase: GetNewsSuggestionsUseCase,
     getSuggestionsUseCase: GetSuggestionsUseCase
 ) : BaseViewModel<NewsSearchState, NewsSearchEvent, NewsSearchIntent>(
     NewsSearchState()
@@ -93,7 +95,13 @@ class NewsSearchViewModel(
                 }
 
                 is NewsSearchIntent.QueryChanged -> {
-                    _state.update { it.copy(query = intent.query) }
+                    _state.update {
+                        it.copy(query = intent.query,
+                            newsSuggestions = getNewsSuggestionsUseCase(
+                                intent.query
+                            )
+                        )
+                    }
                 }
 
                 is NewsSearchIntent.SuggestionClicked -> {

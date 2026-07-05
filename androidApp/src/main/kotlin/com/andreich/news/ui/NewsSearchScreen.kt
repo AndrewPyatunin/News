@@ -39,10 +39,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andreich.news.R
-import com.andreich.news.domain.model.News
 import com.andreich.news.domain.model.ParamsFilter
 import com.andreich.news.ext.MenuPopUpItem
 import com.andreich.news.ext.NewsItem
@@ -73,15 +73,17 @@ fun NewsSearchScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
+        val query = remember { mutableStateOf("") }
         SearchBar(
             modifier = Modifier.fillMaxWidth(),
             tonalElevation = 4.dp,
             shadowElevation = 4.dp,
             inputField = {
                 SearchBarDefaults.InputField(
-                    query = state.query,
+                    query = query.value,
                     expanded = state.expanded,
                     onQueryChange = {
+                        query.value = it
                         onIntent(QueryChanged(it))
                     },
                     onExpandedChange = {
@@ -106,6 +108,7 @@ fun NewsSearchScreen(
                             if (state.query.isNotEmpty()) {
                                 IconButton(
                                     onClick = {
+                                        query.value = ""
                                         onIntent(ClearQuery)
                                     }
                                 ) {
@@ -132,10 +135,11 @@ fun NewsSearchScreen(
                 }
 
                 state.expanded -> {
-                    state.suggestions.forEach {
+                    val suggestions = if (state.query.trim() != "") state.newsSuggestions else state.suggestions
+                    suggestions.forEach {
                         ListItem(
                             headlineContent = {
-                                Text(it)
+                                Text(it, overflow = TextOverflow.Ellipsis, maxLines = 2)
                             },
                             leadingContent = {
                                 Icon(
@@ -150,7 +154,7 @@ fun NewsSearchScreen(
                     }
                 }
 
-                else -> {
+                !state.expanded -> {
 
                 }
             }
@@ -174,8 +178,6 @@ fun NewsSearchScreen(
             }
         }
     }
-
-
 }
 
 @Composable

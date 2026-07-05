@@ -125,4 +125,8 @@ class NewsRepositoryImpl(
         val news = getSingleNews(newsId).first()
         newsDao.insertFavorite(news.toFavoriteEntity())
     }
+
+    override suspend fun getNewsSuggestions(query: String): List<String> {
+        return newsDao.getSuggestions(query)
+    }
 }
