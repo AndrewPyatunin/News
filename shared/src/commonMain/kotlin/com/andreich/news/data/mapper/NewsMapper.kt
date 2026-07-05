@@ -3,54 +3,20 @@ package com.andreich.news.data.mapper
 import com.andreich.news.database.FavoriteNewsEntity
 import com.andreich.news.database.NewsEntity
 import com.andreich.news.domain.model.News
-import com.andreich.news.network.NewsDto
 
 fun NewsEntity.toDomain(): News {
     return News(
         id = id,
-        author = author.decodeNumericEntities(),
-        title = title.decodeNumericEntities(),
-        description = description.decodeNumericEntities(),
+        author = author,
+        title = title,
+        description = description,
         imageUrl = imageUrl,
         url = url,
-        content = content.decodeNumericEntities(),
+        content = getNewsContent(content, description),
         publishedAt = publishedAt,
         category = category,
         sourceCountry = sourceCountry,
         language = language
-    )
-}
-
-fun NewsDto.toDomain(): News {
-    return News(
-        id = id,
-        author = author,
-        title = title,
-        description = description,
-        imageUrl = imageUrl,
-        url = url,
-        content = content,
-        publishedAt = publishedAt,
-        category = category,
-        sourceCountry = "sourceCountry",
-        language = "language"
-    )
-}
-
-fun NewsDto.toEntity(): NewsEntity {
-    return NewsEntity(
-        id = id,
-        author = author,
-        title = title,
-        description = description,
-        imageUrl = imageUrl,
-        url = url,
-        content = content,
-        publishedAt = publishedAt,
-        category = category,
-        sourceCountry = "",//sourceCountry
-        requestKey = "",
-        language = ""
     )
 }
 
@@ -79,7 +45,7 @@ fun FavoriteNewsEntity.toNews(): News {
         description = description,
         imageUrl = imageUrl,
         url = url,
-        content = content,
+        content = getNewsContent(content, description),
         publishedAt = publishedAt,
         category = category,
         sourceCountry = sourceCountry,
@@ -104,8 +70,13 @@ fun News.toFavoriteEntity(): FavoriteNewsEntity {
     )
 }
 
-internal fun String.decodeNumericEntities(): String =
-    replace(Regex("&#(\\d+);")) { match ->
-        val codePoint = match.groupValues[1].toIntOrNull()
-        codePoint?.toChar()?.toString() ?: match.value
-    }
+fun getNewsContent(content: String?, summary: String?): String {
+    return when(content?.filterBrokenContent()) {
+        true -> summary
+        false -> content
+        else -> ""
+    } ?: ""
+}
+private fun String.filterBrokenContent(): Boolean {
+    return this.startsWith("У вас большие запросы!")
+}
