@@ -13,8 +13,9 @@ interface NewsDao {
     @Query("SELECT * FROM news ORDER BY publishedAt DESC")
     suspend fun getNewsList(): List<NewsEntity>
 
-    @Query("SELECT * FROM news")
-    fun getNewsFlow(): Flow<List<NewsEntity>>
+    @Query("SELECT * FROM news WHERE (language = :language OR :language IS NULL) " +
+            "AND (sourceCountry = :country OR :country IS NULL) ORDER BY publishedAt DESC LIMIT :limit")
+    fun getNewsFlow(language: String?, country: String?, limit: Int): Flow<List<NewsEntity>>
 
     @Query("SELECT * FROM favorite_news")
     fun getFavorites(): Flow<List<FavoriteNewsEntity>>

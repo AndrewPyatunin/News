@@ -14,7 +14,7 @@ class CityRepositoryImpl(
     val newsDao: NewsDao
 ) : CityRepository {
     override fun observeCities(isEnglish: Boolean): Flow<List<CityItem>> {
-        return newsDao.getNewsFlow().map { list ->
+        return newsDao.getNewsFlow(null, null, Int.MAX_VALUE).map { list ->
             list.map {
                 it.toDomain()
             }.buildCityItems(isEnglish = isEnglish)

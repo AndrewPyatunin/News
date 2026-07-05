@@ -25,7 +25,7 @@ fun dataModule(context: Context) = module {
     single<CityRepository> {
         CityRepositoryImpl(get(), get())
     }
-    single<SettingsRepository> {
+    single<SettingsRepository>(createdAtStart = true) {
         val isRu = Locale.current.language == Language.RU.name
         SettingsRepositoryImpl(
             get(),

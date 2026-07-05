@@ -8,7 +8,7 @@ class LoadNewsListUseCase(
     private val repository: NewsRepository
 ) {
 
-    operator fun invoke(): Flow<List<News>> {
-        return repository.getNews()
+    operator fun invoke(language: String?, country: String?, limit: Int): Flow<List<News>> {
+        return repository.getNews(language, country, limit)
     }
 }

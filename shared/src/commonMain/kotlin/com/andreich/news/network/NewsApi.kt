@@ -32,13 +32,13 @@ class NewsApi(
 
     }
 
-    suspend fun getNews(): TopNewsResultDto {
+    suspend fun getNews(language: String = EN, sourceCountry: String = US): TopNewsResultDto {
         return client.get {
             url {
                 path(TOP_NEWS)
                 parameters.apply {
-                    append(SOURCE_COUNTRY, US)
-                    append(LANGUAGE, EN)
+                    append(SOURCE_COUNTRY, sourceCountry)
+                    append(LANGUAGE, language)
                     append(DATE, date)
                 }
             }
