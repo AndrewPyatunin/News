@@ -20,20 +20,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import com.andreich.news.domain.model.News
+import com.andreich.news.presentation.core.NewsArticle
 
 @Composable
-fun NewsItem(news: News, onClickNewsListener: (News) -> Unit) {
+fun NewsItem(news: NewsArticle, onClickNewsListener: () -> Unit) {
+    val context = LocalContext.current
     Card(
         modifier = Modifier
             .fillMaxWidth().padding(4.dp)
             .clickable(onClick = {
-                onClickNewsListener(news)
+                onClickNewsListener()
             }),
         border = BorderStroke(1.dp, color = Color.Black),
         shape = CardDefaults.elevatedShape,
@@ -45,19 +47,19 @@ fun NewsItem(news: News, onClickNewsListener: (News) -> Unit) {
         ) {
             Box(modifier = Modifier
                 .weight(1f)
-                .shimmerLoading(1500)) {
+                .shimmerLoading()) {
                 AsyncImage(
-                    model = news.imageUrl.imageBuild(LocalContext.current),
-                    contentScale = ContentScale.Fit,
+                    model = news.imageUrl.imageBuild(context),
+                    contentScale = ContentScale.FillWidth,
                     modifier = Modifier,
                     contentDescription = null,
                 )
             }
 
             Column(modifier = Modifier.padding(horizontal = 4.dp).weight(2f)) {
-                Text(text = news.title, fontSize = 18.sp, fontFamily = FontFamily.Serif)
+                Text(text = news.title, maxLines = 4, overflow = TextOverflow.Ellipsis, fontSize = 16.sp, fontFamily = FontFamily.Serif)
                 Spacer(Modifier.size(6.dp))
-                Text(text = news.description, fontSize = 14.sp)
+                Text(text = news.description, overflow = TextOverflow.Ellipsis, maxLines = 5, fontSize = 14.sp)
             }
         }
     }

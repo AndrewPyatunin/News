@@ -7,9 +7,11 @@ import com.andreich.news.domain.usecase.SaveSearchQueryUseCase
 import com.andreich.news.domain.usecase.SearchNewsUseCase
 import com.andreich.news.domain.usecase.UpdateSearchNewsUseCase
 import com.andreich.news.presentation.core.BaseViewModel
+import com.andreich.news.presentation.core.toNewsArticle
 import com.andreich.news.presentation.newssearch.NewsSearchEvent.NavigateTo
 import com.andreich.news.presentation.newssearch.NewsSearchEvent.ShowError
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onEmpty
 import kotlinx.coroutines.flow.onStart
@@ -103,7 +105,7 @@ class NewsSearchViewModel(
                 }
 
                 is NewsSearchIntent.NewsClick -> {
-                    _events.emit(NavigateTo(intent.news))
+                    _events.emit(NavigateTo(intent.newsId))
                 }
 
                 NewsSearchIntent.FilterMenuClick -> {
@@ -126,20 +128,22 @@ class NewsSearchViewModel(
 
     private fun searchNews(query: String, paramsFilter: ParamsFilter? = null) {
         launch {
-            searchNewsUseCase(query, paramsFilter).onStart {
-                _state.update { it.copy(isLoading = true) }
-            }.onEach { list ->
-                _state.update {
-                    it.copy(
-                        resultList = list,
-                        isLoading = false,
-                        expanded = false
-                    )
-                }
-            }.onEmpty {
-                _state.update { it.copy(isLoading = false, expanded = false) }
-                _events.emit(ShowError("Ничего не найдено!"))
-            }.collect()
+            searchNewsUseCase(query, paramsFilter)
+                .map { list -> list.map { it.toNewsArticle() } }
+                .onStart {
+                    _state.update { it.copy(isLoading = true) }
+                }.onEach { list ->
+                    _state.update {
+                        it.copy(
+                            resultList = list,
+                            isLoading = false,
+                            expanded = false
+                        )
+                    }
+                }.onEmpty {
+                    _state.update { it.copy(isLoading = false, expanded = false) }
+                    _events.emit(ShowError("Ничего не найдено!"))
+                }.collect()
         }
     }
 

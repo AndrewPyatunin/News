@@ -27,7 +27,7 @@ class NewsDetailsViewModel(
                 is NewsDetailsIntent.AddToFavorite -> {
                     _state.value.news?.let {
                         _events.emit(AddToFavoriteSuccess(intent.message))
-                        addToFavouritesUseCase(it)
+                        addToFavouritesUseCase(it.id)
                     }
                 }
 

@@ -168,7 +168,7 @@ fun NewsSearchScreen(
             LazyColumn(state = lazyListState) {
                 items(state.resultList) { news ->
                     NewsItem(news) {
-                        onIntent(NewsClick(it))
+                        onIntent(NewsClick(news.id))
                     }
                 }
             }
@@ -179,7 +179,7 @@ fun NewsSearchScreen(
 }
 
 @Composable
-fun NewsSearchRoute(snackbarState: SnackbarHostState, onNavigateToNewsDetails: (News) -> Unit) {
+fun NewsSearchRoute(snackbarState: SnackbarHostState, onNavigateToNewsDetails: (Int) -> Unit) {
     val viewModel: NewsSearchViewModel = koinViewModel()
     val state by viewModel.state.collectAsState()
 
@@ -187,7 +187,7 @@ fun NewsSearchRoute(snackbarState: SnackbarHostState, onNavigateToNewsDetails: (
         viewModel.events.collect {
             when (it) {
                 is NewsSearchEvent.ShowError -> snackbarState.showSnackbar(message = it.message)
-                is NewsSearchEvent.NavigateTo -> onNavigateToNewsDetails(it.news)
+                is NewsSearchEvent.NavigateTo -> onNavigateToNewsDetails(it.newsId)
             }
         }
     }
@@ -216,7 +216,7 @@ fun NewsSearchRoute(snackbarState: SnackbarHostState, onNavigateToNewsDetails: (
                 }
 
                 is NewsClick -> {
-                    viewModel.sendIntent(NewsClick(news = it.news))
+                    viewModel.sendIntent(NewsClick(newsId = it.newsId))
                 }
 
                 is FilterMenuClick -> {

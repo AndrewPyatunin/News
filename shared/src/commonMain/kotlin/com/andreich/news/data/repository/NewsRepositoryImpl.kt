@@ -17,6 +17,7 @@ import com.andreich.news.network.NewsApi
 import com.andreich.news.network.safeApiCall
 import com.andreich.news.network.toNews
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlin.collections.map
@@ -28,7 +29,10 @@ class NewsRepositoryImpl(
     private val cityLookup: CityLookup
 ) : NewsRepository {
 
-    private val CACHE_EXPIRED = 2 * 3_600L
+    companion object {
+        private const val CACHE_EXPIRED = 2 * 3_600L
+    }
+
 
     override fun getNews(language: String?, country: String?, limit: Int): Flow<List<News>> {
         return newsDao.getNewsFlow(language, country, limit).map { list ->
@@ -97,11 +101,8 @@ class NewsRepositoryImpl(
     }
 
     private suspend fun isCacheExpired(requestType: NewsRequest): Boolean {
-        val currentTime = Clock.System.now().epochSeconds
-        newsDao.getCacheData(requestType)?.apply {
-            return currentTime - time > CACHE_EXPIRED
-        }
-        return true
+        val cache = newsDao.getCacheData(requestType) ?: return true
+        return Clock.System.now().epochSeconds - cache.time > CACHE_EXPIRED
     }
 
     override fun getNewsListByIds(ids: List<Int>): Flow<List<News>> {
@@ -120,7 +121,8 @@ class NewsRepositoryImpl(
         newsDao.removeFromFavorite(newsId)
     }
 
-    override suspend fun addToFavourites(news: News) {
+    override suspend fun addToFavourites(newsId: Int) {
+        val news = getSingleNews(newsId).first()
         newsDao.insertFavorite(news.toFavoriteEntity())
     }
 }

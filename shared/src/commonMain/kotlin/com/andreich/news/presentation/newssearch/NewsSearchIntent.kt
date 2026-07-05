@@ -1,6 +1,5 @@
 package com.andreich.news.presentation.newssearch
 
-import com.andreich.news.domain.model.News
 import com.andreich.news.domain.model.ParamsFilter
 import com.andreich.news.presentation.core.UiIntent
 
@@ -16,7 +15,7 @@ sealed interface NewsSearchIntent : UiIntent {
 
     class QueryChanged(val query: String) : NewsSearchIntent
 
-    class NewsClick(val news: News) : NewsSearchIntent
+    class NewsClick(val newsId: Int) : NewsSearchIntent
 
     class SuggestionClicked(val suggestion: String) : NewsSearchIntent
 

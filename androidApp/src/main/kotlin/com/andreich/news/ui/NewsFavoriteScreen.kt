@@ -25,7 +25,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andreich.news.R
-import com.andreich.news.domain.model.News
 import com.andreich.news.ext.NewsItem
 import com.andreich.news.presentation.newsfavorite.NewsFavoriteEvent
 import com.andreich.news.presentation.newsfavorite.NewsFavoriteIntent
@@ -51,7 +50,7 @@ fun NewsFavoriteRoute(
         viewModel.events.collect {
             when (it) {
                 is NewsFavoriteEvent.NavigateToNewsDetail -> {
-                    onNavigateToNewsDetails(it.news.id)
+                    onNavigateToNewsDetails(it.newsId)
                 }
 
                 NewsFavoriteEvent.RemoveSuccess -> {
@@ -70,7 +69,7 @@ fun NewsFavoriteRoute(
                     )
 
                     if (result == SnackbarResult.ActionPerformed) {
-                        viewModel.sendIntent(NewsFavoriteIntent.UndoRemove(it.news))
+                        viewModel.sendIntent(NewsFavoriteIntent.UndoRemove(it.newsId))
                     }
                 }
             }
@@ -88,8 +87,8 @@ fun NewsFavoriteRoute(
 @Composable
 fun NewsFavoriteScreen(
     state: NewsFavoriteState,
-    onRemoveNews: (News) -> Unit,
-    onNewsClick: (News) -> Unit
+    onRemoveNews: (Int) -> Unit,
+    onNewsClick: (Int) -> Unit
 ) {
     LazyColumn(
         Modifier
@@ -103,7 +102,7 @@ fun NewsFavoriteScreen(
                     .distinctUntilChanged()
                     .filter { it == SwipeToDismissBoxValue.StartToEnd }
                     .collect {
-                        onRemoveNews(news)
+                        onRemoveNews(news.id)
                         dismissState.snapTo(SwipeToDismissBoxValue.Settled)
                     }
             }
@@ -127,7 +126,7 @@ fun NewsFavoriteScreen(
                 }
             ) {
                 NewsItem(news) {
-                    onNewsClick(it)
+                    onNewsClick(news.id)
                 }
             }
         }

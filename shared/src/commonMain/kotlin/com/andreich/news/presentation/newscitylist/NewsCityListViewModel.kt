@@ -2,7 +2,9 @@ package com.andreich.news.presentation.newscitylist
 
 import com.andreich.news.domain.usecase.LoadNewsByIdsUseCase
 import com.andreich.news.presentation.core.BaseViewModel
+import com.andreich.news.presentation.core.toNewsArticle
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onEmpty
 import kotlinx.coroutines.flow.onStart
@@ -17,6 +19,9 @@ class NewsCityListViewModel(
             when (intent) {
                 is NewsCityListIntent.LoadNewsList -> {
                     loadNewsByIdsUseCase(intent.ids)
+                        .map { list ->
+                            list.map { it.toNewsArticle() }
+                        }
                         .onStart {
                             _state.update {
                                 _state.value.copy(isLoading = true)

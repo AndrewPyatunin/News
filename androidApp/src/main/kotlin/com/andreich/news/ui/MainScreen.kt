@@ -125,7 +125,7 @@ fun MainScreen() {
                 FloatingActionButton(
                     shape = CircleShape,
                     elevation = FloatingActionButtonDefaults.elevation(8.dp),
-                    onClick = { newsFabState.value.onClick.invoke() } ,
+                    onClick = { newsFabState.value.onClick() } ,
                     content = {
                         Icon(
                             modifier = Modifier.clip(CircleShape).clipToBounds(),
@@ -142,7 +142,7 @@ fun MainScreen() {
             navHostController = navigationState.navHostController,
             newsListContent = {
                 NewsListRoute(snackBarState = snackBarState, onNavigateToNewsDetails = {
-                    navigationState.navHostController.navigate(NavDestinations.NewsDetails(it.id))
+                    navigationState.navHostController.navigate(NavDestinations.NewsDetails(it))
                 }, onSetAppBarState = {
                       appBarState.value = it
                 }, setFabState = { newsFabState.value = it } )
@@ -157,7 +157,7 @@ fun MainScreen() {
                 })
             }, newsSearchContent = {
                 NewsSearchRoute(snackbarState = snackBarState, onNavigateToNewsDetails = {
-                    navigationState.navHostController.navigate(NavDestinations.NewsDetails(it.id))
+                    navigationState.navHostController.navigate(NavDestinations.NewsDetails(it))
                 })
             }, newsMapContent = {
                 NewsMapRoute(snackbarHostState = snackBarState, onNavigateToNewsDetails = {

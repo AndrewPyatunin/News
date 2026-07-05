@@ -4,9 +4,11 @@ import com.andreich.news.domain.usecase.AddToFavouritesUseCase
 import com.andreich.news.domain.usecase.LoadFavoritesNewsUseCase
 import com.andreich.news.domain.usecase.RemoveFromFavouritesUseCase
 import com.andreich.news.presentation.core.BaseViewModel
+import com.andreich.news.presentation.core.toNewsArticle
 import com.andreich.news.presentation.newsfavorite.NewsFavoriteEvent.NavigateToNewsDetail
 import com.andreich.news.presentation.newsfavorite.NewsFavoriteEvent.ShowUndoRemove
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onEmpty
 import kotlinx.coroutines.flow.onStart
@@ -23,17 +25,19 @@ class NewsFavoriteViewModel(
         launch {
             when (intent) {
                 is NewsFavoriteIntent.ClickNews -> {
-                    _events.emit(NavigateToNewsDetail(intent.news))
+                    _events.emit(NavigateToNewsDetail(intent.newsId))
                 }
 
                 is NewsFavoriteIntent.RemoveNews -> {
-                    removeFromFavouritesUseCase(intent.news.id)
-                    _events.emit(ShowUndoRemove(intent.news))
+                    removeFromFavouritesUseCase(intent.newsId)
+                    _events.emit(ShowUndoRemove(intent.newsId))
 
                 }
 
                 is NewsFavoriteIntent.LoadFavourites -> {
-                    loadFavoritesNewsUseCase().onStart {
+                    loadFavoritesNewsUseCase().map { list ->
+                        list.map { it.toNewsArticle() }
+                    }.onStart {
                         _state.update {
                             _state.value.copy(isLoading = true)
                         }
@@ -48,7 +52,7 @@ class NewsFavoriteViewModel(
                 }
 
                 is NewsFavoriteIntent.UndoRemove -> {
-                    addToFavouritesUseCase(intent.news.copy())
+                    addToFavouritesUseCase(intent.newsId)
                 }
             }
         }

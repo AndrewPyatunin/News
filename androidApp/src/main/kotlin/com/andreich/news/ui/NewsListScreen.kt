@@ -33,7 +33,6 @@ import androidx.compose.ui.unit.dp
 import com.andreich.news.R
 import com.andreich.news.domain.model.Country
 import com.andreich.news.domain.model.Language
-import com.andreich.news.domain.model.News
 import com.andreich.news.domain.model.UserSettings
 import com.andreich.news.ext.AppBarState
 import com.andreich.news.ext.MenuPopUpItem
@@ -52,7 +51,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun NewsListScreen(
     state: NewsListState,
-    onClickNewsListener: (News) -> Unit,
+    onClickNewsListener: (Int) -> Unit,
     onNextPageLoad: () -> Unit,
     onDismiss: () -> Unit,
     onSaveConfigClick: (UserSettings) -> Unit,
@@ -165,8 +164,8 @@ fun NewsListScreen(
             }
         }
         items(state.newsList, key = { it.id }) {
-            NewsItem(it) { news ->
-                onClickNewsListener(news)
+            NewsItem(it) {
+                onClickNewsListener(it.id)
             }
         }
         if (state.isLoadingNextPage) {
@@ -189,7 +188,7 @@ fun NewsListScreen(
 @Composable
 fun NewsListRoute(
     snackBarState: SnackbarHostState,
-    onNavigateToNewsDetails: (News) -> Unit,
+    onNavigateToNewsDetails: (Int) -> Unit,
     onSetAppBarState: (AppBarState) -> Unit,
     setFabState: (NewsFabState) -> Unit
 ) {
@@ -210,7 +209,7 @@ fun NewsListRoute(
         viewModel.events.collect {
             when (it) {
                 is NewsListEvent.NavigateTo -> {
-                    onNavigateToNewsDetails(it.news)
+                    onNavigateToNewsDetails(it.id)
                 }
 
                 is NewsListEvent.ShowError -> {

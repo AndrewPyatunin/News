@@ -6,6 +6,7 @@ import com.andreich.news.domain.usecase.LoadNewsListUseCase
 import com.andreich.news.domain.usecase.UpdateNewsUseCase
 import com.andreich.news.domain.usecase.UpdateUserSettingsUseCase
 import com.andreich.news.presentation.core.BaseViewModel
+import com.andreich.news.presentation.core.toNewsArticle
 import com.andreich.news.presentation.newslist.NewsListEvent.NavigateTo
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,6 +14,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onEmpty
@@ -38,7 +40,7 @@ class NewsListViewModel(
             }
             .flatMapLatest { (language, country, limit) ->
                 loadNewsListUseCase(language, country, limit)
-            }.onStart {
+            }.map { list -> list.map { it.toNewsArticle() } }.onStart {
                 _state.update { it.copy(isLoading = true) }
             }.onEach { list ->
                 _state.update { it.copy(newsList = list, isLoading = false) }
@@ -99,7 +101,7 @@ class NewsListViewModel(
                 }
 
                 is NewsListIntent.NewsClick ->
-                    _events.emit(NavigateTo(intent.news))
+                    _events.emit(NavigateTo(intent.newsId))
 
                 NewsListIntent.ShowMenu -> {
                     _state.update {
