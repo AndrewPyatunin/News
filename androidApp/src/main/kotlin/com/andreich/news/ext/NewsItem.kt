@@ -14,6 +14,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -62,9 +63,14 @@ fun NewsItem(news: News, onClickNewsListener: (News) -> Unit) {
     }
 }
 
+
+
+@Composable
 private fun String.imageBuild(context: Context): ImageRequest {
-    return ImageRequest.Builder(context)
-        .data(this)
-        .crossfade(true)
-        .build()
+    return remember(this) {
+        ImageRequest.Builder(context)
+            .data(this)
+            .crossfade(true)
+            .build()
+    }
 }

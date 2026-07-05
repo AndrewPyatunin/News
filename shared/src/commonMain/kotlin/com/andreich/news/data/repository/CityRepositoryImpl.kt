@@ -24,8 +24,8 @@ class CityRepositoryImpl(
     private fun List<News>.buildCityItems(isEnglish: Boolean = true): List<CityItem> {
         return flatMap { news ->
             cityLookup.findCityList(
-                "${news.title} ${news.description} ${news.content}",
-                isEnglish
+                param = "${news.title} ${news.description} ${news.content}",
+                isEnglish = null
             ).map {
                 it to news
             }

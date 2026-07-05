@@ -131,7 +131,6 @@ fun NewsMapScreen(state: NewsMapState, onMarkerClick: (List<Int>) -> Unit) {
             color = const(Color.Blue),
             radius = const(20.dp),
             onClick = { features ->
-                // zoom to cluster later
                 ClickResult.Consume
             }
         )

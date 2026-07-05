@@ -20,12 +20,12 @@ actual class CityLookup(
         """\b[\p{Lu}][\p{L}'-]+(?:\s+(?:[\p{Lu}][\p{L}'-]+|на|имени|де|эль|оф))*"""
     )
 
-    private val cityRegexStrong = Regex(
+    private val cityRegexEn = Regex(
         """\b(?:[A-Z][\p{L}'-]+|St\.)\b(?:\s+(?:of|de|del|da|di|du|la|le|el|van|von|san|santa|saint|chi|minh)\b|\s+(?:[A-Z][\p{L}'-]+|St\.))*"""
     )
 
     init {
-        CoroutineScope(Dispatchers.Default).launch {
+        CoroutineScope(Dispatchers.IO).launch {
             val textFirst = Res.readBytes("files/town.json").decodeToString()
             val text = Res.readBytes("files/cities.json").decodeToString()
             val textRu = Res.readBytes("files/cities_ru.json").decodeToString()
@@ -37,17 +37,32 @@ actual class CityLookup(
         }
     }
 
-    actual fun findCityList(param: String, isEnglish: Boolean): List<CityDto> {
-        val listWords = extractWord(param, isEnglish)
-        return if (isEnglish) {
-            listWords.mapNotNull {
-                findCity(it.normalize())
-            }
-        } else {
-            listWords.mapNotNull {
-                findRuCity(it.normalize())
+    actual fun findCityList(param: String, isEnglish: Boolean?): List<CityDto> {
+        if (isEnglish == null) return findUniversalCity(param)
+        isEnglish.let {
+            val listWords = extractWord(param, it)
+            return if (it) {
+                listWords.mapNotNull {
+                    findCity(it.normalize())
+                }
+            } else {
+                listWords.mapNotNull {
+                    findRuCity(it.normalize())
+                }
             }
         }
+    }
+    private fun findUniversalCity(param: String): List<CityDto> {
+        val rus = extractWord(param, false).mapNotNull {
+            findRuCity(it.normalize())
+        }
+        val eng = extractWord(param, true).mapNotNull {
+                    findCity(it.normalize())
+                }
+
+        return rus.toMutableList().apply {
+            addAll(eng)
+        }.toList()
     }
 
     actual fun findCity(param: String): CityDto? {
@@ -69,7 +84,7 @@ actual class CityLookup(
     private fun String.normalize() = trim().lowercase(getDefault())
 
     private fun extractWord(text: String, isEnglish: Boolean): List<String> {
-        return (if (isEnglish) cityRegexStrong else cityRegexRu)
+        return (if (isEnglish) cityRegexEn else cityRegexRu)
             .findAll(text)
             .map { it.value.trim() }
             .filter { it.count(Char::isLetter) >= 3 }
