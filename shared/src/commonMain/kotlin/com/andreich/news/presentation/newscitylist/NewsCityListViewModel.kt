@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onEmpty
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
-import org.jetbrains.compose.resources.stringResource
 
 class NewsCityListViewModel(
     private val loadNewsByIdsUseCase: LoadNewsByIdsUseCase

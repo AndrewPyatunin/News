@@ -6,6 +6,10 @@ import com.andreich.news.presentation.core.UiIntent
 
 sealed interface NewsListIntent : UiIntent {
 
+    object UpdateNews : NewsListIntent
+
+    object ObserveNews : NewsListIntent
+
     object LoadNextPage : NewsListIntent
 
     object LoadConfiguration : NewsListIntent

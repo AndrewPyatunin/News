@@ -18,12 +18,14 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -35,6 +37,7 @@ import com.andreich.news.domain.model.News
 import com.andreich.news.domain.model.UserSettings
 import com.andreich.news.ext.AppBarState
 import com.andreich.news.ext.MenuPopUpItem
+import com.andreich.news.ext.NewsFabState
 import com.andreich.news.ext.NewsItem
 import com.andreich.news.ext.TextContent
 import com.andreich.news.ext.TextHeader
@@ -42,6 +45,8 @@ import com.andreich.news.presentation.newslist.NewsListEvent
 import com.andreich.news.presentation.newslist.NewsListIntent
 import com.andreich.news.presentation.newslist.NewsListState
 import com.andreich.news.presentation.newslist.NewsListViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -50,14 +55,15 @@ fun NewsListScreen(
     onClickNewsListener: (News) -> Unit,
     onNextPageLoad: () -> Unit,
     onDismiss: () -> Unit,
-    onSaveConfigClick: (UserSettings) -> Unit
+    onSaveConfigClick: (UserSettings) -> Unit,
+    setFabState: (NewsFabState) -> Unit
 ) {
     val lazyListState = rememberLazyListState()
     val shouldLoadMore by remember(lazyListState, state.newsList.size) {
         derivedStateOf {
             val lastVisible = lazyListState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
 
-            lastVisible >= state.newsList.lastIndex - 3
+            lastVisible >= state.newsList.lastIndex - 5
         }
     }
     LaunchedEffect(shouldLoadMore) {
@@ -125,11 +131,31 @@ fun NewsListScreen(
             }
         }
     }
+    val showFab by remember {
+        derivedStateOf {
+            lazyListState.lastScrolledBackward || !lazyListState.canScrollForward
+        }
+    }
+    val scope = rememberCoroutineScope()
 
+    val scrollToTop = {
+        scope.launch {
+            lazyListState.scrollToItem(0)
+        }
+    }
+    LaunchedEffect(showFab) {
+        setFabState(NewsFabState(showFab, scrollToTop))
+    }
+    DisposableEffect(Unit) {
+        onDispose {
+            setFabState(NewsFabState(false, { Job() }))
+        }
+    }
     LazyColumn(
         Modifier.background(MaterialTheme.colorScheme.background),
         state = lazyListState
     ) {
+
 
         if (state.isLoading && state.newsList.isEmpty()) {
             item {
@@ -155,8 +181,8 @@ fun NewsListScreen(
                 }
             }
         }
-
     }
+
 
 }
 
@@ -164,13 +190,16 @@ fun NewsListScreen(
 fun NewsListRoute(
     snackBarState: SnackbarHostState,
     onNavigateToNewsDetails: (News) -> Unit,
-    onSetAppBarState: (AppBarState) -> Unit
+    onSetAppBarState: (AppBarState) -> Unit,
+    setFabState: (NewsFabState) -> Unit
 ) {
     val viewModel: NewsListViewModel = koinViewModel()
     val state by viewModel.state.collectAsState()
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(viewModel) {
         viewModel.sendIntent(NewsListIntent.LoadConfiguration)
+        viewModel.sendIntent(NewsListIntent.ObserveNews)
+        viewModel.sendIntent(NewsListIntent.UpdateNews)
         onSetAppBarState(
             AppBarState(
                 showFilter = state.menuExpanded,
@@ -205,5 +234,7 @@ fun NewsListRoute(
         },
         onSaveConfigClick = {
             viewModel.sendIntent(NewsListIntent.ConfigureSettings(it))
-        })
+        },
+        setFabState = setFabState
+    )
 }
