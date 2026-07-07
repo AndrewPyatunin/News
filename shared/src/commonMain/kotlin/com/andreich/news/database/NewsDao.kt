@@ -31,17 +31,17 @@ interface NewsDao {
 
     @Query(
         "SELECT * FROM news WHERE (:param = '' OR title LIKE '%' || :param || '%') " +
-                "OR (description LIKE '%' || :param || '%') AND (sourceCountry LIKE '%' || :country || '%' OR :country IS NULL)" +
-                "AND (language LIKE '%' || :language || '%' OR :language IS NULL) " +
+                "OR (description LIKE '%' || :param || '%') " + "OR (content LIKE '%' || :param || '%')" +
+                "AND (language LIKE '%' || :language || '%' OR :language IS NULL) AND (sourceCountry LIKE '%' || :country || '%' OR :country IS NULL)" +
                 "AND (:category = category OR :category IS NULL) AND (:location = sourceCountry OR :location IS NULL)"
     )
-    suspend fun getSearchedNews(
+    fun getSearchedNews(
         param: String,
         language: String?,
         country: String?,
         category: String?,
         location: String?
-    ): List<NewsEntity>
+    ): Flow<List<NewsEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertNews(news: List<NewsEntity>)

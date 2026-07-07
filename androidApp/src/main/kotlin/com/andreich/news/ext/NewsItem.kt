@@ -1,7 +1,6 @@
 package com.andreich.news.ext
 
 import android.content.Context
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -9,7 +8,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -17,10 +15,10 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -37,7 +35,10 @@ import com.andreich.news.R
 import com.andreich.news.presentation.core.NewsArticle
 import com.andreich.news.ui.core.ImageFailureCache
 import com.andreich.news.ui.core.ImageRequestFactory
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun NewsItem(news: NewsArticle, onClickNewsListener: () -> Unit) {
@@ -63,8 +64,9 @@ fun NewsItem(news: NewsArticle, onClickNewsListener: () -> Unit) {
         ) {
             Box(
                 modifier = Modifier
+                    .size(150.dp, 150.dp)
                     .weight(1f)
-                    .shimmerLoading(isLoading = isLoading.value)
+                    .shimmerLoading(isLoading.value)
             ) {
                 if (news.imageUrl != "") {
                     MyAsyncImage(news.imageUrl, imageRequestFactory, imageLoader, isLoading)
@@ -116,11 +118,8 @@ private fun MyAsyncImage(
     imageLoader: ImageLoader,
     isLoading: MutableState<Boolean>
 ) {
-    LaunchedEffect(Unit) {
-        Log.d("LOADER", imageLoader.hashCode().toString())
-    }
-    Log.d("MODEL", "$url (${url::class.java.name})")
     val request: ImageRequest = remember { imageRequestFactory.create(url) }
+    val scope = rememberCoroutineScope()
     if (ImageFailureCache.isBlocked(url)) {
         Box(
             modifier = Modifier
@@ -137,14 +136,21 @@ private fun MyAsyncImage(
             model = request,
             imageLoader = imageLoader,
             contentScale = ContentScale.FillWidth,
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxWidth(),
             error = painterResource(R.drawable.news_placeholder),
             contentDescription = null,
             onError = {
                 isLoading.value = false
             },
             onSuccess = {
-                isLoading.value = false
+                scope.launch {
+                    delay(200.milliseconds)
+                    isLoading.value = false
+                }
+
+            },
+            onLoading = {
+                isLoading.value = true
             }
         )
     }

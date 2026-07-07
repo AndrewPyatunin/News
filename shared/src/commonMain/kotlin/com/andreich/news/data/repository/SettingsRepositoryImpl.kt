@@ -26,21 +26,21 @@ class SettingsRepositoryImpl(
     override val prefs: Flow<UserSettings>
         get() = dataStore.data.map { prefs ->
             UserSettings(
-                country = Country.valueOf(prefs[COUNTRY] ?: deviceInfo.country.name),
-                language = Language.valueOf(prefs[LANGUAGE] ?: deviceInfo.language.name),
+                country = Country.valueOf(prefs[COUNTRY] ?: deviceInfo.country?.name ?: "ru"),
+                language = Language.valueOf(prefs[LANGUAGE] ?: deviceInfo.language?.name ?: "ru"),
                 darkTheme = prefs[DARK_THEME] ?: deviceInfo.darkTheme
             )
         }
 
     override suspend fun updateSettings(userSettings: UserSettings) {
         dataStore.edit { prefs ->
-            prefs[COUNTRY] = userSettings.country.name.uppercase()
+            prefs[COUNTRY] = userSettings.country?.name?.uppercase() ?: "ru"
         }
         dataStore.edit { prefs ->
-            prefs[LANGUAGE] = userSettings.language.name.uppercase()
+            prefs[LANGUAGE] = userSettings.language?.name?.uppercase() ?: "ru"
         }
         dataStore.edit {
-            it[DARK_THEME] = userSettings.darkTheme
+            it[DARK_THEME] = userSettings.darkTheme == true
         }
     }
 }

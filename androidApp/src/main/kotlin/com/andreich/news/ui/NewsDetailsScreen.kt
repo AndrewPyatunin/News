@@ -31,7 +31,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil3.compose.rememberAsyncImagePainter
+import coil3.compose.AsyncImage
 import com.andreich.news.R
 import com.andreich.news.presentation.newsdetail.NewsDetailsEvent
 import com.andreich.news.presentation.newsdetail.NewsDetailsIntent
@@ -66,11 +66,20 @@ fun NewsDetailScreen(
                 .padding(horizontal = 8.dp)
                 .fillMaxWidth()
         ) {
-            Image(
-                painter = rememberAsyncImagePainter(news?.imageUrl),
-                modifier = Modifier,
-                contentDescription = null
+            if (news?.imageUrl != "" ) {
+                AsyncImage(
+                    model = news?.imageUrl,
+                    modifier = Modifier.fillMaxWidth(),
+                    contentDescription = null,
+                    placeholder = painterResource(R.drawable.news_placeholder),
+                    error = painterResource(R.drawable.news_placeholder)
+                )
+            } else Image(
+                painter = painterResource(R.drawable.news_placeholder),
+                contentDescription = null,
+                modifier = Modifier.fillMaxWidth()
             )
+
             IconButton(
                 modifier = Modifier
                     .padding(6.dp)

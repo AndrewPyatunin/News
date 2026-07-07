@@ -6,6 +6,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,8 +29,8 @@ abstract class BaseViewModel<S: UiState, E: UiEvent, I: UiIntent>(
     protected open fun launch(
         dispatcher: CoroutineDispatcher = Dispatchers.IO,
         block: suspend CoroutineScope.() -> Unit,
-    ) {
-        viewModelScope.launch(dispatcher) {
+    ): Job {
+         return viewModelScope.launch(dispatcher) {
             try {
                 block()
             } catch (e: Exception) {

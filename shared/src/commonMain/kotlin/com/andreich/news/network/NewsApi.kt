@@ -53,8 +53,9 @@ class NewsApi(
                     append(TEXT, param)
                     append(DATE, date)
                     paramsFilter?.let {
-                        append(SOURCE_COUNTRY, it.country)
-                        append(LANGUAGE, it.language)
+                        it.country?.let { append(SOURCE_COUNTRY, it) }
+                        it.language?.let { append(LANGUAGE, it) }
+
                         it.category?.let { category ->
                             append(CATEGORY, category)
                         }
@@ -65,8 +66,6 @@ class NewsApi(
                     }
                 }
             }
-        }.body<SearchResultDto>().apply {
-
-        }
+        }.body<SearchResultDto>()
     }
 }

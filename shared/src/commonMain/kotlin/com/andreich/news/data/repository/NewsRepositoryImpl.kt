@@ -18,9 +18,7 @@ import com.andreich.news.network.safeApiCall
 import com.andreich.news.network.toNews
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import kotlin.collections.map
 import kotlin.time.Clock
 
 class NewsRepositoryImpl(
@@ -48,85 +46,102 @@ class NewsRepositoryImpl(
         param: String,
         paramsFilter: ParamsFilter?
     ): Flow<List<News>> {
-        return flow {
-            emit(value = newsDao.getSearchedNews(
-                    param,
-                    paramsFilter?.language,
-                    paramsFilter?.country,
-                    paramsFilter?.category,
-                    paramsFilter?.location
-                ).map { it.toDomain() }
-            )
+
+        return newsDao.getSearchedNews(
+            param,
+            paramsFilter?.language,
+            paramsFilter?.country,
+            paramsFilter?.category,
+            paramsFilter?.location
+        ).map { list ->
+            list.map {
+                it.toDomain()
+            }
         }
     }
 
     override suspend fun updateNews(language: String, country: String): RequestResult {
-        return getRequestResult(NewsRequest.TopNews) {
+        return getRequestResult(
+            if (language.lowercase() == "en") NewsRequest.TopNewsEng(country) else if(language.lowercase() == "ru") NewsRequest.TopNewsRu(
+                country
+            ) else NewsRequest.TopNewsRu(country)
+        ) {
             getTopNewsApiCall(language, country)
         }
     }
 
-    override suspend fun updateSearchedNews(param: String, paramsFilter: ParamsFilter?): RequestResult {
-        return getRequestResult(NewsRequest.Search(param)) {
+    override suspend fun updateSearchedNews(
+        param: String,
+        paramsFilter: ParamsFilter?
+    ): RequestResult {
+        return getRequestResult(
+            paramsFilter?.let { (country, language, category, location) ->
+                country?.let { if (language?.lowercase() == "en") NewsRequest.SearchEng(
+                    param,
+                    country
+                ) else if (language?.lowercase() == "ru") NewsRequest.SearchRu(param, country) else NewsRequest.TopNewsRu(country) } ?: NewsRequest.TopNewsRu("ru")
+
+            } ?: throw RuntimeException("ParamsFilter is null!"))
+        {
             searchApiCall(param, paramsFilter)
         }
     }
 
-    private suspend fun searchApiCall(param: String, paramsFilter: ParamsFilter?): List<News> {
-        val searchParams = paramsFilter?.toSearchParamsDto(cityLookup)
-        return newsApi.searchNews(param, searchParams).news.map {
-            it.toNews()
+private suspend fun searchApiCall(param: String, paramsFilter: ParamsFilter?): List<News> {
+    val searchParams = paramsFilter?.toSearchParamsDto(cityLookup)
+    return newsApi.searchNews(param, searchParams).news.map {
+        it.toNews()
+    }
+}
+
+private suspend fun getTopNewsApiCall(language: String, country: String): List<News> {
+    return newsApi.getNews(language, country).topNews.map {
+        it.news[0].toNews()
+    }
+}
+
+suspend fun getRequestResult(
+    requestType: NewsRequest,
+    apiCall: suspend () -> List<News>
+): RequestResult {
+    val currentTime = Clock.System.now().epochSeconds
+    if (!isCacheExpired(requestType)) return RequestResult.Success
+    return safeApiCall(
+        apiCall = apiCall,
+        onSuccess = {
+            newsDao.insertCacheTime(CacheEntity(requestType, currentTime))
+            newsDao.insertNews(it.map { it.toEntity() })
         }
-    }
+    )
+}
 
-    private suspend fun getTopNewsApiCall(language: String, country: String): List<News> {
-        return newsApi.getNews(language, country).topNews.map {
-            it.news[0].toNews()
-        }
-    }
+private suspend fun isCacheExpired(requestType: NewsRequest): Boolean {
+    val cache = newsDao.getCacheData(requestType) ?: return true
+    return Clock.System.now().epochSeconds - cache.time > CACHE_EXPIRED
+}
 
-    suspend fun getRequestResult(
-        requestType: NewsRequest,
-        apiCall: suspend () -> List<News>
-    ): RequestResult {
-        val currentTime = Clock.System.now().epochSeconds
-        if (!isCacheExpired(requestType)) return RequestResult.Success
-        return safeApiCall(
-            apiCall = apiCall,
-            onSuccess = {
-                newsDao.insertCacheTime(CacheEntity(requestType, currentTime))
-                newsDao.insertNews(it.map { it.toEntity() })
-            }
-        )
+override fun getNewsListByIds(ids: List<Int>): Flow<List<News>> {
+    return newsDao.getListNewsByIds(ids).map {
+        it.map { entity -> entity.toDomain() }
     }
+}
 
-    private suspend fun isCacheExpired(requestType: NewsRequest): Boolean {
-        val cache = newsDao.getCacheData(requestType) ?: return true
-        return Clock.System.now().epochSeconds - cache.time > CACHE_EXPIRED
+override fun getSingleNews(id: Int): Flow<News> {
+    return newsDao.getSingleNews(id).map {
+        it.toDomain()
     }
+}
 
-    override fun getNewsListByIds(ids: List<Int>): Flow<List<News>> {
-        return newsDao.getListNewsByIds(ids).map {
-            it.map { entity -> entity.toDomain() }
-        }
-    }
+override suspend fun removeFromFavourites(newsId: Int) {
+    newsDao.removeFromFavorite(newsId)
+}
 
-    override fun getSingleNews(id: Int): Flow<News> {
-        return newsDao.getSingleNews(id).map {
-            it.toDomain()
-        }
-    }
+override suspend fun addToFavourites(newsId: Int) {
+    val news = getSingleNews(newsId).first()
+    newsDao.insertFavorite(news.toFavoriteEntity())
+}
 
-    override suspend fun removeFromFavourites(newsId: Int) {
-        newsDao.removeFromFavorite(newsId)
-    }
-
-    override suspend fun addToFavourites(newsId: Int) {
-        val news = getSingleNews(newsId).first()
-        newsDao.insertFavorite(news.toFavoriteEntity())
-    }
-
-    override suspend fun getNewsSuggestions(query: String): List<String> {
-        return newsDao.getSuggestions(query)
-    }
+override suspend fun getNewsSuggestions(query: String): List<String> {
+    return newsDao.getSuggestions(query)
+}
 }

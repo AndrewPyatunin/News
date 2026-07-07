@@ -5,7 +5,14 @@ import kotlinx.serialization.Serializable
 @Serializable
 sealed interface NewsRequest {
     @Serializable
-    object TopNews : NewsRequest
+    data class TopNewsRu(val country: String) : NewsRequest
+
     @Serializable
-    data class Search(val param: String) : NewsRequest
+    data class TopNewsEng(val country: String) : NewsRequest
+
+    @Serializable
+    data class SearchRu(val param: String, val country: String) : NewsRequest
+
+    @Serializable
+    data class SearchEng(val param: String, val country: String) : NewsRequest
 }

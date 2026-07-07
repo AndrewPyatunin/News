@@ -36,7 +36,7 @@ class NewsListViewModel(
         _state.mapNotNull { it.userSettings }
             .distinctUntilChanged()
             .combine(limit) { settings, limit ->
-                Triple(settings.language.name.lowercase(), settings.country.name.lowercase(), limit)
+                Triple(settings.language?.name?.lowercase(), settings.country?.name?.lowercase(), limit)
             }
             .flatMapLatest { (language, country, limit) ->
                 loadNewsListUseCase(language, country, limit)
@@ -54,7 +54,7 @@ class NewsListViewModel(
         val settings = state.value.userSettings
         launch {
             settings?.let {
-                when (val result = updateNewsUseCase(it.language.name, it.country.name)) {
+                when (val result = updateNewsUseCase(it.language?.name ?: "ru", it.country?.name ?: "ru")) {
                     is RequestResult.Failure.NoInternet -> {
                         onRequestError(result.message)
                     }

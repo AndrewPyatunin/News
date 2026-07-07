@@ -30,8 +30,11 @@
     <string name="technology">Технологии</string>
     <string name="health">Здоровье</string>
     <string name="science">Наука</string>
-    <string name="light">light</string>
-    <string name="dark">dark</string>
+    <string name="light">Светлая</string>
+    <string name="dark">Темная</string>
     <string name="configure">Применить</string>
     <string name="theme">Выбор темы</string>
+    <string name="without_param">Без параметров</string>
+    <string name="country">"Страна"</string>
+    <string name="language">"Язык"</string>
 </resources>
