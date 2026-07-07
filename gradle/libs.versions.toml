@@ -17,7 +17,7 @@ coroutines = "1.11.0"
 room = "2.8.4"
 ksp = "2.3.9"
 sqlite = "2.6.2"
-ktor = "3.5.0"
+ktor = "3.5.1"
 coil = "3.5.0"
 koin = "4.2.2"
 navigation = "2.9.8"
@@ -26,6 +26,7 @@ uiGraphics = "1.11.3"
 maplibre = "13.3.1"
 maplibreCompose = "0.13.0"
 kotlinxImmutable = "0.5.0"
+exifinterface = "1.4.2"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -58,6 +59,7 @@ ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "kto
 ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
+coil-network-okhttp3 = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
@@ -70,6 +72,7 @@ org-maplibre-android = { module = "org.maplibre.gl:android-sdk", version.ref = "
 org-maplibre-compose = { module = "org.maplibre.compose:maplibre-compose", version.ref = "maplibreCompose" }
 kotlinx-collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "kotlinxImmutable" }
 compose-runtime-tracing = { module = "androidx.compose.runtime:runtime-tracing", version = "1.11.3" }
+androidx-exifinterface = { group = "androidx.exifinterface", name = "exifinterface", version.ref = "exifinterface" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

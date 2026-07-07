@@ -10,7 +10,7 @@ fun NewsEntity.toDomain(): News {
         author = author,
         title = title,
         description = description,
-        imageUrl = imageUrl,
+        imageUrl = imageUrl.toHttps(),
         url = url,
         content = getNewsContent(content, description),
         publishedAt = publishedAt,
@@ -43,7 +43,7 @@ fun FavoriteNewsEntity.toNews(): News {
         author = author,
         title = title,
         description = description,
-        imageUrl = imageUrl,
+        imageUrl = imageUrl.toHttps(),
         url = url,
         content = getNewsContent(content, description),
         publishedAt = publishedAt,
@@ -77,6 +77,12 @@ fun getNewsContent(content: String?, summary: String?): String {
         else -> ""
     } ?: ""
 }
+
+private fun String.toHttps() =
+    if (startsWith("http://"))
+        replaceFirst("http://", "https://")
+    else
+        this
 private fun String.filterBrokenContent(): Boolean {
     return this.startsWith("У вас большие запросы!")
 }

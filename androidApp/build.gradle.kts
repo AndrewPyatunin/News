@@ -14,6 +14,7 @@ kotlin {
     }
 }
 dependencies {
+    implementation(libs.androidx.exifinterface)
     implementation(libs.androidx.ui.graphics)
     implementation(projects.shared)
 
@@ -23,6 +24,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
 
     implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp3)
     implementation(libs.coil.network.ktor)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.room.runtime)

@@ -17,8 +17,11 @@ import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun Modifier.shimmerLoading(
+    isLoading: Boolean,
     durationMillis: Int = 1000,
 ): Modifier {
+    if(!isLoading) return this
+
     val transition = rememberInfiniteTransition(label = "")
 
     val translateAnimation by transition.animateFloat(

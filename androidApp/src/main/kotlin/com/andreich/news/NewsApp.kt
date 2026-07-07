@@ -7,6 +7,7 @@ import com.andreich.news.di.databaseModule
 import com.andreich.news.di.domainModule
 import com.andreich.news.di.networkModule
 import com.andreich.news.di.presentationModule
+import com.andreich.news.di.uiModule
 import org.koin.core.context.startKoin
 
 class NewsApp : Application() {
@@ -20,7 +21,8 @@ class NewsApp : Application() {
                 dataStoreModule(applicationContext),
                 domainModule,
                 networkModule(apiKey),
-                presentationModule
+                presentationModule,
+                uiModule(applicationContext)
             )
         }
     }

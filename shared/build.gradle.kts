@@ -41,6 +41,7 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.ktor.client.okhttp)
+            implementation(libs.coil.network.okhttp3)
         }
         commonMain.dependencies {
             implementation(libs.androidx.datastore.preferences)

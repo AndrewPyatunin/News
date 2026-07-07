@@ -15,7 +15,7 @@ fun networkModule(apiKey: String) = module {
     single<NewsApi> {
         NewsApi(
             get(),
-            LocalDate.ofEpochDay(Clock.System.now().epochSeconds / 86400 - 10).toString()
+            LocalDate.ofEpochDay(Clock.System.now().epochSeconds / 86400 - 15).toString()
         )
     }
 }
