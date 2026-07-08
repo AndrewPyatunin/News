@@ -158,11 +158,12 @@ fun NewsDetailScreen(
                 Spacer(modifier = Modifier.size(8.dp))
             }
         }
-        items(state.chunks.take(visibleChunks - 1)) { chunk ->
+        items(state.chunks.take(visibleChunks)) { chunk ->
 
             Text(
                 text = chunk,
-                fontSize = 16.sp
+                fontSize = 16.sp,
+                modifier = modifier.padding(horizontal = 4.dp)
             )
         }
     }
