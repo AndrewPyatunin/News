@@ -1,18 +1,18 @@
 package com.andreich.news.ui
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -22,6 +22,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,6 +39,7 @@ import com.andreich.news.presentation.newsdetail.NewsDetailsEvent
 import com.andreich.news.presentation.newsdetail.NewsDetailsIntent
 import com.andreich.news.presentation.newsdetail.NewsDetailsState
 import com.andreich.news.presentation.newsdetail.NewsDetailsViewModel
+import kotlinx.coroutines.android.awaitFrame
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -47,85 +50,115 @@ fun NewsDetailScreen(
     onAddToFavoriteClick: () -> Unit,
     onRemoveFromFavoriteClick: () -> Unit
 ) {
-    val news = state.news
-    Column(
+    LazyColumn(
         modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
             .background(MaterialTheme.colorScheme.background)
     ) {
-        Text(
-            text = news?.title.orEmpty(),
-            fontSize = 24.sp,
-            fontStyle = FontStyle.Italic,
-            modifier = Modifier.padding(horizontal = 6.dp),
-        )
-        Spacer(modifier = Modifier.size(8.dp))
-        Box(
-            contentAlignment = Alignment.Center, modifier = Modifier
-                .padding(horizontal = 8.dp)
-                .fillMaxWidth()
-        ) {
-            if (news?.imageUrl != "" ) {
-                AsyncImage(
-                    model = news?.imageUrl,
-                    modifier = Modifier.fillMaxWidth(),
-                    contentDescription = null,
-                    placeholder = painterResource(R.drawable.news_placeholder),
-                    error = painterResource(R.drawable.news_placeholder)
-                )
-            } else Image(
-                painter = painterResource(R.drawable.news_placeholder),
-                contentDescription = null,
-                modifier = Modifier.fillMaxWidth()
-            )
+        if (state.isLoading) {
+            item {
+                CircularProgressIndicator()
+            }
 
-            IconButton(
-                modifier = Modifier
-                    .padding(6.dp)
-                    .size(28.dp)
-                    .align(Alignment.TopEnd),
-                onClick = {
-                    if (state.isFavorite) onRemoveFromFavoriteClick()
-                    else onAddToFavoriteClick()
-                }) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        painter = painterResource(R.drawable.favorite_filled),
+        } else {
+            val news = state.news
+            item {
+                Text(
+                    text = news?.title.orEmpty(),
+                    fontSize = 24.sp,
+                    fontStyle = FontStyle.Italic,
+                    modifier = Modifier.padding(horizontal = 6.dp),
+                )
+                Spacer(modifier = Modifier.size(8.dp))
+            }
+            item {
+                Box(
+                    contentAlignment = Alignment.Center, modifier = Modifier
+                        .padding(horizontal = 8.dp)
+                        .fillMaxWidth()
+                ) {
+                    if (news?.imageUrl != "") {
+                        AsyncImage(
+                            model = news?.imageUrl,
+                            modifier = Modifier.fillMaxWidth(),
+                            contentDescription = null,
+                            placeholder = painterResource(R.drawable.news_placeholder),
+                            error = painterResource(R.drawable.news_placeholder)
+                        )
+                    } else Image(
+                        painter = painterResource(R.drawable.news_placeholder),
                         contentDescription = null,
-                        tint = Color.Gray
+                        modifier = Modifier.fillMaxWidth()
                     )
-                    Icon(
-                        modifier = Modifier.size(24.dp),
-                        painter = if (!state.isFavorite)
-                            painterResource(R.drawable.favorite_24px) else painterResource(R.drawable.favorite_true),
-                        contentDescription = null,
-                        tint = if (state.isFavorite) Color.Red else Color.Unspecified
-                    )
+
+                    IconButton(
+                        modifier = Modifier
+                            .padding(6.dp)
+                            .size(28.dp)
+                            .align(Alignment.TopEnd),
+                        onClick = {
+                            if (state.isFavorite) onRemoveFromFavoriteClick()
+                            else onAddToFavoriteClick()
+                        }) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                painter = painterResource(R.drawable.favorite_filled),
+                                contentDescription = null,
+                                tint = Color.Gray
+                            )
+                            Icon(
+                                modifier = Modifier.size(24.dp),
+                                painter = if (!state.isFavorite)
+                                    painterResource(R.drawable.favorite_24px) else painterResource(R.drawable.favorite_true),
+                                contentDescription = null,
+                                tint = if (state.isFavorite) Color.Red else Color.Unspecified
+                            )
+                        }
+
+                    }
                 }
+            }
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    news?.publishedAt?.let {
+                        Text(
+                            text = stringResource(R.string.published_at, it),
+                            textAlign = TextAlign.Left,
+                            modifier = Modifier.padding(horizontal = 4.dp)
+                        )
+                    }
+                    news?.author?.let {
+                        Text(
+                            text = stringResource(R.string.author, it),
+                            textAlign = TextAlign.Right,
+                            modifier = Modifier.padding(horizontal = 4.dp)
+                        )
+                    }
+                }
+            }
+            item {
+                val textLoaded = remember(news?.id) { mutableStateOf(false) }
+                val text = news?.content ?: ""
+                if (text.length > 5000) {
+                    Log.d("ARTICLE", "chars=${text.length}")
+                    LaunchedEffect(Unit) {
+                        awaitFrame()
+                        awaitFrame()
+                        awaitFrame()
+                        awaitFrame()
+                        textLoaded.value = true
+                    }
+                } else textLoaded.value = true
 
-            }
-
-        }
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            news?.publishedAt?.let {
-                Text(
-                    text = stringResource(R.string.published_at, it),
-                    textAlign = TextAlign.Left,
-                    modifier = Modifier.padding(horizontal = 4.dp)
-                )
-            }
-            news?.author?.let {
-                Text(
-                    text = stringResource(R.string.author, it),
-                    textAlign = TextAlign.Right,
-                    modifier = Modifier.padding(horizontal = 4.dp)
-                )
+                Spacer(modifier = Modifier.size(8.dp))
+                if (textLoaded.value) Text(text = text, fontSize = 16.sp)
             }
         }
-        Spacer(modifier = Modifier.size(8.dp))
-        Text(text = news?.content.orEmpty(), fontSize = 16.sp)
     }
+
 }
 
 @Composable
@@ -137,7 +170,7 @@ fun NewsDetailsRoute(snackBarState: SnackbarHostState, newsId: Int) {
     val addMessage = stringResource(R.string.added_to_favorite)
     val removeMessage = stringResource(R.string.removed_from_favorite)
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(viewModel) {
         viewModel.sendIntent(NewsDetailsIntent.LoadNews(newsId))
         viewModel.events.collect {
             when (it) {
