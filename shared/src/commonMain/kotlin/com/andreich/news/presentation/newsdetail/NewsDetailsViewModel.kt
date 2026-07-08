@@ -1,5 +1,6 @@
 package com.andreich.news.presentation.newsdetail
 
+import com.andreich.news.NewsLogger
 import com.andreich.news.domain.usecase.AddToFavouritesUseCase
 import com.andreich.news.domain.usecase.LoadFavoritesNewsUseCase
 import com.andreich.news.domain.usecase.LoadSingleNewsUseCase
@@ -50,9 +51,11 @@ class NewsDetailsViewModel(
                             _state.value.copy(
                                 news = news,
                                 isLoading = false,
-                                isFavorite = news.id in favoriteIds
+                                isFavorite = news.id in favoriteIds,
+                                chunks = news.content.prepareNewsContent()
                             )
                         }
+                        NewsLogger().log("NEWS_CONTENT", news.content.prepareNewsContent().size.toString())
                     }
                 }
 
@@ -70,4 +73,32 @@ class NewsDetailsViewModel(
         _state.update { _state.value.copy(isLoading = false) }
         _events.emit(NewsDetailsEvent.ShowError(e.message.orEmpty()))
     }
+
+    private fun String.prepareNewsContent(chunkSize: Int = 3000): List<String> {
+            val result = mutableListOf<String>()
+            val builder = StringBuilder()
+
+            lines().forEach { paragraph ->
+
+                if (
+                    builder.isNotEmpty() &&
+                    builder.length + paragraph.length > chunkSize
+                ) {
+                    result += builder.toString()
+                    builder.clear()
+                }
+
+                if (builder.isNotEmpty()) {
+                    builder.append("\n")
+                }
+
+                builder.append(paragraph)
+            }
+
+            if (builder.isNotEmpty()) {
+                result += builder.toString()
+            }
+
+            return result.toList()
+        }
 }

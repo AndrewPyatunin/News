@@ -1,6 +1,5 @@
 package com.andreich.news.ui
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -12,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -22,8 +22,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,7 +41,6 @@ import com.andreich.news.presentation.newsdetail.NewsDetailsEvent
 import com.andreich.news.presentation.newsdetail.NewsDetailsIntent
 import com.andreich.news.presentation.newsdetail.NewsDetailsState
 import com.andreich.news.presentation.newsdetail.NewsDetailsViewModel
-import kotlinx.coroutines.android.awaitFrame
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -50,6 +51,19 @@ fun NewsDetailScreen(
     onAddToFavoriteClick: () -> Unit,
     onRemoveFromFavoriteClick: () -> Unit
 ) {
+    var visibleChunks by remember(state.chunks) {
+        mutableIntStateOf(1)
+    }
+
+    LaunchedEffect(state.chunks) {
+        while (visibleChunks < state.chunks.size) {
+            withFrameNanos { }
+            visibleChunks = minOf(
+                visibleChunks + 5,
+                state.chunks.size
+            )
+        }
+    }
     LazyColumn(
         modifier
             .fillMaxSize()
@@ -140,22 +154,16 @@ fun NewsDetailScreen(
                 }
             }
             item {
-                val textLoaded = remember(news?.id) { mutableStateOf(false) }
-                val text = news?.content ?: ""
-                if (text.length > 5000) {
-                    Log.d("ARTICLE", "chars=${text.length}")
-                    LaunchedEffect(Unit) {
-                        awaitFrame()
-                        awaitFrame()
-                        awaitFrame()
-                        awaitFrame()
-                        textLoaded.value = true
-                    }
-                } else textLoaded.value = true
 
                 Spacer(modifier = Modifier.size(8.dp))
-                if (textLoaded.value) Text(text = text, fontSize = 16.sp)
             }
+        }
+        items(state.chunks.take(visibleChunks - 1)) { chunk ->
+
+            Text(
+                text = chunk,
+                fontSize = 16.sp
+            )
         }
     }
 
