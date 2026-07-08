@@ -28,7 +28,7 @@ class NewsListViewModel(
     private val updateNewsUseCase: UpdateNewsUseCase
 ) : BaseViewModel<NewsListState, NewsListEvent, NewsListIntent>(NewsListState()) {
 
-    private val PAGE_SIZE = 20
+    private val PAGE_SIZE = 12
     private var limit = MutableStateFlow(PAGE_SIZE)
 
     @OptIn(ExperimentalCoroutinesApi::class)
