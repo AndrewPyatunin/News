@@ -37,4 +37,5 @@
     <string name="without_param">Без параметров</string>
     <string name="country">"Страна"</string>
     <string name="language">"Язык"</string>
+    <string name="none">none</string>
 </resources>

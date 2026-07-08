@@ -149,7 +149,9 @@ fun MainScreen() {
             }, newsDetailsContent = {
                 NewsDetailsRoute(
                     snackBarState = snackBarState,
-                    newsId = it
+                    newsId = it, setFabState = { state ->
+                        newsFabState.value = state
+                    }
                 )
             }, newsFavoriteContent = {
                 NewsFavoriteRoute(snackbarHostState = snackBarState, onNavigateToNewsDetails = {

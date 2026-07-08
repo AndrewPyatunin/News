@@ -36,4 +36,5 @@
     <string name="without_param">Without params</string>
     <string name="country">Country</string>
     <string name="language">Language</string>
+    <string name="none">none</string>
 </resources>

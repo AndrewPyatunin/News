@@ -132,7 +132,7 @@ private fun MyAsyncImage(
                 contentDescription = null,
                 contentScale = ContentScale.FillWidth
             )
-            LaunchedEffect(Unit) {
+            LaunchedEffect(url) {
                 onLoadingChanged(false)
             }
         }
@@ -143,6 +143,7 @@ private fun MyAsyncImage(
             contentScale = ContentScale.FillWidth,
             modifier = Modifier.fillMaxWidth(),
             error = painterResource(R.drawable.news_placeholder),
+            placeholder = painterResource(R.drawable.news_placeholder),
             contentDescription = null,
             onError = {
                 onLoadingChanged(false)

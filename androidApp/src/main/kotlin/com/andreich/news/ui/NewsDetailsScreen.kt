@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -19,11 +20,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
@@ -37,10 +41,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.andreich.news.R
+import com.andreich.news.ext.NewsFabState
 import com.andreich.news.presentation.newsdetail.NewsDetailsEvent
 import com.andreich.news.presentation.newsdetail.NewsDetailsIntent
 import com.andreich.news.presentation.newsdetail.NewsDetailsState
 import com.andreich.news.presentation.newsdetail.NewsDetailsViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -49,12 +56,33 @@ fun NewsDetailScreen(
     modifier: Modifier,
     state: NewsDetailsState,
     onAddToFavoriteClick: () -> Unit,
-    onRemoveFromFavoriteClick: () -> Unit
+    onRemoveFromFavoriteClick: () -> Unit,
+    setFabState: (NewsFabState) -> Unit
 ) {
+    val lazyListState = rememberLazyListState()
     var visibleChunks by remember(state.chunks) {
         mutableIntStateOf(1)
     }
+    val showFab by remember(state) {
+        derivedStateOf {
+            lazyListState.lastScrolledBackward || (!lazyListState.canScrollForward && !lazyListState.canScrollBackward)
+        }
+    }
+    val scope = rememberCoroutineScope()
 
+    val scrollToTop = {
+        scope.launch {
+            lazyListState.scrollToItem(0)
+        }
+    }
+    LaunchedEffect(showFab) {
+        setFabState(NewsFabState(showFab, scrollToTop))
+    }
+    DisposableEffect(Unit) {
+        onDispose {
+            setFabState(NewsFabState(false, { Job() }))
+        }
+    }
     LaunchedEffect(state.chunks) {
         while (visibleChunks < state.chunks.size) {
             withFrameNanos { }
@@ -67,7 +95,8 @@ fun NewsDetailScreen(
     LazyColumn(
         modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(MaterialTheme.colorScheme.background),
+        state = lazyListState
     ) {
         if (state.isLoading) {
             item {
@@ -171,7 +200,7 @@ fun NewsDetailScreen(
 }
 
 @Composable
-fun NewsDetailsRoute(snackBarState: SnackbarHostState, newsId: Int) {
+fun NewsDetailsRoute(snackBarState: SnackbarHostState, newsId: Int, setFabState: (NewsFabState) -> Unit) {
     val viewModel: NewsDetailsViewModel = koinViewModel<NewsDetailsViewModel>(parameters = {
         parametersOf(newsId)
     })
@@ -205,6 +234,6 @@ fun NewsDetailsRoute(snackBarState: SnackbarHostState, newsId: Int) {
             viewModel.sendIntent(NewsDetailsIntent.AddToFavorite(addMessage))
         }, onRemoveFromFavoriteClick = {
             viewModel.sendIntent(NewsDetailsIntent.RemoveFromFavorite(removeMessage))
-        }
+        }, setFabState = setFabState
     )
 }

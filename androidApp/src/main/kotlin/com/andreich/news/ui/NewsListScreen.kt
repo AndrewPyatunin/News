@@ -10,13 +10,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.Button
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -30,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.andreich.news.R
 import com.andreich.news.domain.model.Country
 import com.andreich.news.domain.model.Language
@@ -44,6 +47,8 @@ import com.andreich.news.presentation.newslist.NewsListEvent
 import com.andreich.news.presentation.newslist.NewsListIntent
 import com.andreich.news.presentation.newslist.NewsListState
 import com.andreich.news.presentation.newslist.NewsListViewModel
+import com.andreich.news.ui.core.AnimatedButton
+import com.andreich.news.ui.core.RadioButtonSelection
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
@@ -74,32 +79,32 @@ fun NewsListScreen(
         MenuPopUpItem(
             onDismiss = onDismiss, modifier = Modifier.padding(top = 8.dp),
         ) {
-            val countryUs = remember { mutableStateOf(true) }
-            val languageEn = remember { mutableStateOf(true) }
+            val NONE = stringResource(R.string.no)
+            val RUSSIA = stringResource(R.string.russia)
+            val RUSSIAN = stringResource(R.string.russian)
+            val ENGLISH = stringResource(R.string.english)
+            val US = stringResource(R.string.us)
+            val WITHOUT = stringResource(R.string.without_param)
+
+            val chosenCountryLang = remember { mutableStateOf(WITHOUT to WITHOUT) }
             val themeDark = remember { mutableStateOf(true) }
-            Column(modifier = Modifier.fillMaxSize()) {
-                TextHeader(stringResource(R.string.news_country))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    TextContent(stringResource(R.string.russia))
-                    Switch(
-                        checked = countryUs.value,
-                        onCheckedChange = {
-                            countryUs.value = it
-                        }
-                    )
-                    TextContent(stringResource(R.string.us))
-                }
+            val listCountriesToLanguages = listOf(RUSSIA to RUSSIAN, US to ENGLISH)
+            Column(modifier = Modifier.fillMaxSize().verticalScroll(state = rememberScrollState())) {
+                TextHeader("${stringResource(R.string.news_country)}\n(${stringResource(R.string.response_language)})")
                 HorizontalDivider()
-                TextHeader(stringResource(R.string.response_language))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    TextContent(stringResource(R.string.russian))
-                    Switch(
-                        checked = languageEn.value,
-                        onCheckedChange = {
-                            languageEn.value = it
-                        }
+                RadioButtonSelection(radioOptions = listCountriesToLanguages, onParam = {
+                    chosenCountryLang.value = it
+                }) { text ->
+                    Text(
+                        fontSize = 18.sp,
+                        text = " ${stringResource(R.string.country)} ${text.first} (${text.second} ${
+                            stringResource(
+                                R.string.language
+                            )
+                        })",
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(start = 16.dp)
                     )
-                    TextContent(stringResource(R.string.english))
                 }
                 HorizontalDivider()
                 TextHeader(stringResource(R.string.theme))
@@ -113,26 +118,22 @@ fun NewsListScreen(
                     )
                     TextContent(stringResource(R.string.dark))
                 }
-                Button(
-                    modifier = Modifier
-                        .padding(horizontal = 4.dp)
-                        .fillMaxWidth(), onClick = {
-                        onSaveConfigClick(
-                            UserSettings(
-                                country = if (countryUs.value) Country.US else Country.RU,
-                                language = if (languageEn.value) Language.EN else Language.RU,
-                                darkTheme = themeDark.value
-                            )
+                AnimatedButton(text = stringResource(R.string.configure)) {
+                    onSaveConfigClick(
+                        UserSettings(
+                            country = when(chosenCountryLang.value.first) { RUSSIA -> Country.RU; US -> Country.US; else -> null },
+                            language = when(chosenCountryLang.value.second) { RUSSIAN -> Language.RU; ENGLISH -> Language.EN; else -> null },
+                            darkTheme = themeDark.value
                         )
-                    }) {
-                    TextHeader(stringResource(R.string.configure))
+                    )
                 }
             }
         }
     }
-    val showFab by remember {
+    val showFab by remember(state) {
         derivedStateOf {
-            lazyListState.lastScrolledBackward || !lazyListState.canScrollForward
+            lazyListState.lastScrolledBackward || (!lazyListState.canScrollForward && !lazyListState.canScrollBackward)
+
         }
     }
     val scope = rememberCoroutineScope()
@@ -158,7 +159,7 @@ fun NewsListScreen(
 
         if (state.isLoading && state.newsList.isEmpty()) {
             item {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
                 }
             }

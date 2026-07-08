@@ -1,33 +1,18 @@
 package com.andreich.news.ui
 
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.indication
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.ripple.rememberRipple
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -36,11 +21,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -50,12 +33,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -77,6 +56,8 @@ import com.andreich.news.presentation.newssearch.NewsSearchIntent.SearchNews
 import com.andreich.news.presentation.newssearch.NewsSearchIntent.SuggestionClicked
 import com.andreich.news.presentation.newssearch.NewsSearchState
 import com.andreich.news.presentation.newssearch.NewsSearchViewModel
+import com.andreich.news.ui.core.AnimatedButton
+import com.andreich.news.ui.core.RadioButtonSelection
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -260,10 +241,12 @@ fun NewsPopUp(onSaveFilterParam: (ParamsFilter) -> Unit, onDismiss: () -> Unit) 
     val RUSSIAN = stringResource(R.string.russian)
     val ENGLISH = stringResource(R.string.english)
     val US = stringResource(R.string.us)
-    val NONE = stringResource(R.string.without_param)
+    val WITHOUT = stringResource(R.string.without_param)
+    val NONE = stringResource(R.string.none)
+    val NO = stringResource(R.string.no)
     val EMPTY = ""
     val listCountriesToLanguages: List<Pair<String, String>> = listOf(
-        NONE to NONE,
+        WITHOUT to WITHOUT,
         RUSSIA to RUSSIAN,
         US to ENGLISH,
     )
@@ -275,11 +258,23 @@ fun NewsPopUp(onSaveFilterParam: (ParamsFilter) -> Unit, onDismiss: () -> Unit) 
                     state = scrollableState
                 )
         ) {
-            val selectedOptionCountry = remember { mutableStateOf(NONE to NONE) }
+            val selectedCategory = remember { mutableStateOf(NONE to NONE) }
+            val selectedOptionCountry = remember { mutableStateOf(WITHOUT to WITHOUT) }
             TextHeader("${stringResource(R.string.news_country)}\n(${stringResource(R.string.response_language)})")
             HorizontalDivider()
-            RadioButtonSelection(radioOptions = listCountriesToLanguages) {
+            RadioButtonSelection(radioOptions = listCountriesToLanguages, onParam = {
                 selectedOptionCountry.value = it
+            }) { text ->
+                Text(
+                    fontSize = 18.sp,
+                    text = " ${stringResource(R.string.country)} ${text.first} (${text.second} ${
+                        stringResource(
+                            R.string.language
+                        )
+                    })",
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(start = 16.dp)
+                )
             }
             val categories = listOf(
                 "none",
@@ -299,33 +294,19 @@ fun NewsPopUp(onSaveFilterParam: (ParamsFilter) -> Unit, onDismiss: () -> Unit) 
                 stringResource(R.string.health),
                 stringResource(R.string.science)
             )
-            val (selectedOption, onOptionSelected) = remember {
-                mutableStateOf(
-                    localizedCategories[0]
+            val categoriesChoose =
+                localizedCategories.mapIndexed { index, category -> category to categories[index] }
+            TextHeader(stringResource(R.string.category_search))
+            RadioButtonSelection(radioOptions = categoriesChoose, onParam = {
+                selectedCategory.value = it
+            }) { text ->
+                Text(
+                    fontSize = 16.sp,
+                    text = text.first,
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(start = 4.dp)
                 )
             }
-            TextHeader(stringResource(R.string.category_search))
-            Column(Modifier.selectableGroup()) {
-                localizedCategories.forEachIndexed { index, text ->
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .selectable(
-                                selected = (text == selectedOption),
-                                onClick = { onOptionSelected(text) },
-                            ), verticalAlignment = Alignment.CenterVertically
-                    )
-                    {
-                        RadioButton(
-                            selected = (selectedOption == text),
-                            onClick = { onOptionSelected(text) }
-                        )
-                        Text(text = text, fontSize = 16.sp)
-
-                    }
-                }
-            }
-            val selectedCategory = categories[localizedCategories.indexOf(selectedOption)]
             HorizontalDivider()
             TextHeader(stringResource(R.string.location_search))
             val location = remember { mutableStateOf("") }
@@ -335,9 +316,16 @@ fun NewsPopUp(onSaveFilterParam: (ParamsFilter) -> Unit, onDismiss: () -> Unit) 
             AnimatedButton(modifier = Modifier.fillMaxWidth(), onClick = {
                 onSaveFilterParam(
                     ParamsFilter(
-                        country = when(val selectedFirst = selectedOptionCountry.value.first) { NONE -> null; else -> selectedFirst },
-                        language = when (val selectedSecond = selectedOptionCountry.value.second) { NONE -> null; else -> selectedSecond },
-                        category = if (selectedCategory == "none") null else selectedCategory,
+                        country = when (val selectedFirst = selectedOptionCountry.value.first) {
+                            WITHOUT -> null; else -> selectedFirst
+                        },
+                        language = when (val selectedSecond = selectedOptionCountry.value.second) {
+                            WITHOUT -> null; else -> selectedSecond
+                        },
+                        category = when (val selectedNone = selectedCategory.value.second) {
+                            NONE -> null
+                            else -> selectedNone
+                        },
                         location = if (location.value.trim() == "") null else location.value
                     )
                 )
@@ -346,68 +334,6 @@ fun NewsPopUp(onSaveFilterParam: (ParamsFilter) -> Unit, onDismiss: () -> Unit) 
     }
 }
 
-@Composable
-fun AnimatedButton(modifier: Modifier, onClick: () -> Unit, text: String) {
-    val interactionSource = remember { MutableInteractionSource() }
-    var isPressed = interactionSource.collectIsPressedAsState()
-    val sizeScale by animateFloatAsState(if (isPressed.value) 0.8f else 1f)
-
-    Button(
-        onClick = onClick,
-        modifier = modifier
-            .indication(interactionSource, LocalIndication.current)
-            .clickable { isPressed.value }
-            .padding(16.dp)
-            .wrapContentSize()
-            .graphicsLayer(
-                scaleX = sizeScale,
-                scaleY = sizeScale
-            ),
-        shape = RoundedCornerShape(10),
-        elevation = ButtonDefaults.buttonElevation(if (isPressed.value) 10.dp else 0.dp),
-        interactionSource = interactionSource
-    ) {
-        TextHeader(text)
-    }
-
-}
-    @Composable
-    fun RadioButtonSelection(
-        modifier: Modifier = Modifier,
-        radioOptions: List<Pair<String, String>>,
-        onParam: (Pair<String, String>) -> Unit
-    ) {
-        val (selectedOption, onOptionSelected) = remember { mutableStateOf(radioOptions[0]) }
-        Column(modifier.selectableGroup()) {
-            radioOptions.forEach { text ->
-                Row(
-                    modifier
-                        .fillMaxWidth()
-                        .height(56.dp)
-                        .selectable(
-                            selected = (text == selectedOption),
-                            onClick = {
-                                onOptionSelected(text)
-                                onParam(selectedOption) },
-                            role = Role.RadioButton
-                        )
-                        .padding(horizontal = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    RadioButton(
-                        selected = (text == selectedOption),
-                        onClick = null
-                    )
-                    Text(
-                        fontSize = 16.sp,
-                        text = " ${stringResource(R.string.country)} ${text.first} (${text.second} ${stringResource(R.string.language)})",
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(start = 16.dp)
-                    )
-                }
-            }
-        }
-}
 
 
 
