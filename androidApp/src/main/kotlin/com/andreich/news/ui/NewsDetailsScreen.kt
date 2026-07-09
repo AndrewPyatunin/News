@@ -26,9 +26,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,9 +49,12 @@ import com.andreich.news.presentation.newsdetail.NewsDetailsIntent
 import com.andreich.news.presentation.newsdetail.NewsDetailsState
 import com.andreich.news.presentation.newsdetail.NewsDetailsViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun NewsDetailScreen(
@@ -63,10 +68,23 @@ fun NewsDetailScreen(
     var visibleChunks by remember(state.chunks) {
         mutableIntStateOf(1)
     }
+    val fabVisual = remember { mutableStateOf(false) }
     val showFab by remember(state) {
         derivedStateOf {
-            lazyListState.lastScrolledBackward || (!lazyListState.canScrollForward && !lazyListState.canScrollBackward)
+            lazyListState.lastScrolledBackward && fabVisual.value
+
         }
+    }
+    LaunchedEffect(lazyListState) {
+        snapshotFlow { lazyListState.isScrollInProgress }
+            .collectLatest { scrolling ->
+                if (scrolling) {
+                    fabVisual.value = true
+                } else {
+                    delay(1500.milliseconds)
+                    fabVisual.value = false
+                }
+            }
     }
     val scope = rememberCoroutineScope()
 

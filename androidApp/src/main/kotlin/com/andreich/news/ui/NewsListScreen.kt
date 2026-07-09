@@ -28,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -50,8 +51,11 @@ import com.andreich.news.presentation.newslist.NewsListViewModel
 import com.andreich.news.ui.core.AnimatedButton
 import com.andreich.news.ui.core.RadioButtonSelection
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun NewsListScreen(
@@ -79,7 +83,6 @@ fun NewsListScreen(
         MenuPopUpItem(
             onDismiss = onDismiss, modifier = Modifier.padding(top = 8.dp),
         ) {
-            val NONE = stringResource(R.string.no)
             val RUSSIA = stringResource(R.string.russia)
             val RUSSIAN = stringResource(R.string.russian)
             val ENGLISH = stringResource(R.string.english)
@@ -130,11 +133,23 @@ fun NewsListScreen(
             }
         }
     }
+    val fabVisual = remember { mutableStateOf(false) }
     val showFab by remember(state) {
         derivedStateOf {
-            lazyListState.lastScrolledBackward || (!lazyListState.canScrollForward && !lazyListState.canScrollBackward)
+            lazyListState.lastScrolledBackward && fabVisual.value
 
         }
+    }
+    LaunchedEffect(lazyListState) {
+        snapshotFlow { lazyListState.isScrollInProgress }
+            .collectLatest { scrolling ->
+                if (scrolling) {
+                    fabVisual.value = true
+                } else {
+                    delay(1500.milliseconds)
+                    fabVisual.value = false
+                }
+            }
     }
     val scope = rememberCoroutineScope()
 

@@ -1,5 +1,6 @@
 package com.andreich.news.ui.core
 
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -34,7 +35,7 @@ fun RadioButtonSelection(
                         selected = (text == selectedOption),
                         onClick = {
                             onOptionSelected(text)
-                            onParam(selectedOption)
+                            onParam(text)
                         },
                         role = Role.RadioButton
                     )
