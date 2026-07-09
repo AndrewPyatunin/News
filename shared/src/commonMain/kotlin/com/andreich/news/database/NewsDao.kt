@@ -33,7 +33,8 @@ interface NewsDao {
         "SELECT * FROM news WHERE (:param = '' OR title LIKE '%' || :param || '%') " +
                 "OR (description LIKE '%' || :param || '%') " + "OR (content LIKE '%' || :param || '%')" +
                 "AND (language LIKE '%' || :language || '%' OR :language IS NULL) AND (sourceCountry LIKE '%' || :country || '%' OR :country IS NULL)" +
-                "AND (:category = category OR :category IS NULL) AND (:location = sourceCountry OR :location IS NULL)"
+                "AND (category LIKE '%' || :category || '%' OR :category IS NULL) AND (:location = '' OR title LIKE '%' || :location || '%')"+
+                "ORDER BY publishedAt DESC"
     )
     fun getSearchedNews(
         param: String,

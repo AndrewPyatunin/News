@@ -16,6 +16,7 @@ class NewsApi(
 
         const val TEXT = "text"
         const val SEARCH_NEWS = "search-news"
+
         const val RU = "ru"
 
         const val US = "us"
@@ -28,9 +29,9 @@ class NewsApi(
 
         const val LOCATION = "location-filter"
 
-        const val DATE = "date"
+        const val EARLIEST_DATE = "earliest-publish-date"
 
-        const val EARLIST_DATE = "earlist-publish-date"
+        const val NUMBER = "number"
     }
 
     suspend fun getNews(language: String = EN, sourceCountry: String = US): TopNewsResultDto {
@@ -51,18 +52,20 @@ class NewsApi(
                 path(SEARCH_NEWS)
                 parameters.apply {
                     append(TEXT, param)
-                    paramsFilter?.let {
-                        it.country?.let { append(SOURCE_COUNTRY, it) }
-                        it.language?.let { append(LANGUAGE, it) }
+                    paramsFilter?.let { paramsDto ->
+                        paramsDto.country?.let { append(SOURCE_COUNTRY, it) }
+                        paramsDto.language?.let { append(LANGUAGE, it) }
 
-                        it.category?.let { category ->
+                        paramsDto.category?.let { category ->
                             append(CATEGORY, category)
                         }
-                        it.location?.let { location ->
+                        paramsDto.location?.let { location ->
                             append(LOCATION, location)
                         }
 
                     }
+                    append(EARLIEST_DATE, date)
+                    append(NUMBER, "100")
                 }
             }
         }.body<SearchResultDto>()

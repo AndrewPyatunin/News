@@ -15,4 +15,7 @@ sealed interface NewsRequest {
 
     @Serializable
     data class SearchEng(val param: String, val country: String) : NewsRequest
+
+    @Serializable
+    data class Search(val param: String) : NewsRequest
 }

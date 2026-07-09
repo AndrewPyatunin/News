@@ -18,6 +18,7 @@ import com.andreich.news.presentation.newssearch.NewsSearchEvent.NavigateTo
 import com.andreich.news.presentation.newssearch.NewsSearchEvent.ShowError
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onEmpty
@@ -40,6 +41,9 @@ class NewsSearchViewModel(
 
     init {
         launch {
+            updateUserSettings()
+        }
+        launch {
             getSuggestionsUseCase()
             .onEmpty {
                 _state.update { it.copy(isLoading = false) }
@@ -55,7 +59,6 @@ class NewsSearchViewModel(
                 }
             }
         }
-
     }
 
     suspend fun saveSearch(query: String) {
@@ -104,8 +107,10 @@ class NewsSearchViewModel(
             when (intent) {
                 is NewsSearchIntent.SearchNews -> {
                     searchNews(query = intent.param, paramsFilter = state.value.paramsFilter)
-                    updateSearch(intent.param, state.value.paramsFilter)
-                    saveSearch(intent.param)
+                    updateSearch(intent.param, state.value.paramsFilter).run {
+                        saveSearch(intent.param)
+                    }
+
                 }
 
                 is NewsSearchIntent.ExpandedChanged -> {
@@ -126,6 +131,11 @@ class NewsSearchViewModel(
 
                 is NewsSearchIntent.SuggestionClicked -> {
                     searchNews(query = intent.suggestion, paramsFilter = state.value.paramsFilter)
+                    updateSearch(intent.suggestion, state.value.paramsFilter).run {
+                        saveSearch(intent.suggestion).run {
+
+                        }
+                    }
                 }
 
                 is NewsSearchIntent.ClearQuery -> {
@@ -133,6 +143,7 @@ class NewsSearchViewModel(
                 }
 
                 is NewsSearchIntent.NewsClick -> {
+                    _state.update { it.copy(query = "") }
                     _events.emit(NavigateTo(intent.newsId))
                 }
 
@@ -143,23 +154,31 @@ class NewsSearchViewModel(
                 }
 
                 is NewsSearchIntent.SaveFilterParams -> {
-                    val userSettings: UserSettings? = state.value.userSettings?.copy(
-                        country = intent.paramsFilter.country?.toCountryEnum(),
-                        language = intent.paramsFilter.language?.toLanguageEnum()
-                    )
                     _state.update {
                         it.copy(
                             paramsFilter = intent.paramsFilter,
-                            userSettings = userSettings,
                             popUpMenuShowed = false
                         )
                     }
-                    userSettings?.let {
-                        updateUserSettingsUseCase(it)
-                    }
-
+                    updateUserSettingsUseCase(intent.paramsFilter.toUserSettings(intent.isDarkTheme))
                 }
             }
+        }
+    }
+
+    private fun ParamsFilter.toUserSettings(isDarkTheme: Boolean): UserSettings {
+        return UserSettings(
+            country = country?.toCountryEnum(),
+            language = language?.toLanguageEnum(),
+            darkTheme = isDarkTheme
+        )
+    }
+
+    private fun updateUserSettings() {
+        launch {
+            getUserSettingsUseCase().distinctUntilChanged().onEach { settings ->
+                _state.update { it.copy(userSettings = settings) }
+            }.collect()
         }
     }
 

@@ -2,6 +2,7 @@ package com.andreich.news.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -66,6 +67,7 @@ fun NewsSearchScreen(
     state: NewsSearchState,
     onIntent: (NewsSearchIntent) -> Unit
 ) {
+    val isDarkTheme = isSystemInDarkTheme()
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -89,6 +91,7 @@ fun NewsSearchScreen(
                     },
                     onSearch = {
                         onIntent(SearchNews(it.trim()))
+                        onIntent(ClearQuery)
                     },
                     placeholder = { Text(stringResource(R.string.search)) },
                     trailingIcon = {
@@ -161,7 +164,7 @@ fun NewsSearchScreen(
         }
         if (state.popUpMenuShowed) {
             NewsPopUp(onSaveFilterParam = {
-                onIntent(SaveFilterParams(it))
+                onIntent(SaveFilterParams(it, isDarkTheme))
             }, onDismiss = {
                 onIntent(FilterMenuClick)
             })
@@ -225,7 +228,7 @@ fun NewsSearchRoute(snackbarState: SnackbarHostState, onNavigateToNewsDetails: (
                 }
 
                 is SaveFilterParams -> {
-                    viewModel.sendIntent(SaveFilterParams(it.paramsFilter))
+                    viewModel.sendIntent(SaveFilterParams(it.paramsFilter, it.isDarkTheme))
                 }
             }
         }
@@ -317,10 +320,22 @@ fun NewsPopUp(onSaveFilterParam: (ParamsFilter) -> Unit, onDismiss: () -> Unit) 
                 onSaveFilterParam(
                     ParamsFilter(
                         country = when (val selectedFirst = selectedOptionCountry.value.first) {
-                            WITHOUT -> null; else -> selectedFirst
+                            WITHOUT -> null; else -> {
+                                when (selectedFirst) {
+                                    RUSSIA -> "ru"
+                                    US -> "us"
+                                    else -> "ru"
+                                }
+                            }
                         },
                         language = when (val selectedSecond = selectedOptionCountry.value.second) {
-                            WITHOUT -> null; else -> selectedSecond
+                            WITHOUT -> null; else -> {
+                                when (selectedSecond) {
+                                    RUSSIAN -> "ru"
+                                    ENGLISH -> "en"
+                                    else -> "ru"
+                                }
+                            }
                         },
                         category = when (val selectedNone = selectedCategory.value.second) {
                             NONE -> null

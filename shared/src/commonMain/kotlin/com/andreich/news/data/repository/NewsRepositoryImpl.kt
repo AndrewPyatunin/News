@@ -46,7 +46,6 @@ class NewsRepositoryImpl(
         param: String,
         paramsFilter: ParamsFilter?
     ): Flow<List<News>> {
-
         return newsDao.getSearchedNews(
             param,
             paramsFilter?.language,
@@ -76,12 +75,12 @@ class NewsRepositoryImpl(
     ): RequestResult {
         return getRequestResult(
             paramsFilter?.let { (country, language, category, location) ->
-                country?.let { if (language?.lowercase() == "en") NewsRequest.SearchEng(
+                country?.let { if (country.lowercase() == "en") NewsRequest.SearchEng(
                     param,
                     country
-                ) else if (language?.lowercase() == "ru") NewsRequest.SearchRu(param, country) else NewsRequest.TopNewsRu(country) } ?: NewsRequest.TopNewsRu("ru")
+                ) else if (country.lowercase() == "ru") NewsRequest.SearchRu(param, country) else NewsRequest.Search(param) } ?: NewsRequest.Search(param)
 
-            } ?: throw RuntimeException("ParamsFilter is null!"))
+            } ?: NewsRequest.Search(param))
         {
             searchApiCall(param, paramsFilter)
         }
@@ -89,13 +88,13 @@ class NewsRepositoryImpl(
 
 private suspend fun searchApiCall(param: String, paramsFilter: ParamsFilter?): List<News> {
     val searchParams = paramsFilter?.toSearchParamsDto(cityLookup)
-    return newsApi.searchNews(param, searchParams).news.map {
+    return newsApi.searchNews(param, searchParams).news.distinctBy { Triple(it.title, it.author, it.summary) }.map {
         it.toNews()
     }
 }
 
 private suspend fun getTopNewsApiCall(language: String, country: String): List<News> {
-    return newsApi.getNews(language = language, country).topNews.map {
+    return newsApi.getNews(language = language, country).topNews.distinctBy { it.news.firstOrNull()?.let { news -> Triple(it.news[0].title, it.news[0].author, it.news[0].summary) } }.map{
         it.news[0].toNews()
     }
 }
