@@ -13,9 +13,9 @@ import com.andreich.news.domain.usecase.SearchNewsUseCase
 import com.andreich.news.domain.usecase.UpdateSearchNewsUseCase
 import com.andreich.news.domain.usecase.UpdateUserSettingsUseCase
 import com.andreich.news.presentation.core.BaseViewModel
+import com.andreich.news.presentation.core.UiMessage
 import com.andreich.news.presentation.core.toNewsArticle
 import com.andreich.news.presentation.newssearch.NewsSearchEvent.NavigateTo
-import com.andreich.news.presentation.newssearch.NewsSearchEvent.ShowError
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -47,7 +47,7 @@ class NewsSearchViewModel(
             getSuggestionsUseCase()
             .onEmpty {
                 _state.update { it.copy(isLoading = false) }
-                _events.emit(ShowError("Что-то пошло не так!"))
+                _messages.emit(UiMessage.ShowError("Что-то пошло не так!"))
             }.collect { suggestions ->
                 if (suggestions.isEmpty()) {
                     _state.update { it.copy(isLoading = false) }
@@ -66,8 +66,7 @@ class NewsSearchViewModel(
     }
 
     suspend fun updateSearch(query: String, paramsFilter: ParamsFilter?) {
-        val result = updateSearchNewsUseCase(param = query, paramsFilter = paramsFilter)
-        when (result) {
+        when (val result = updateSearchNewsUseCase(param = query, paramsFilter = paramsFilter)) {
             is RequestResult.Failure.NoInternet -> {
                 sendError(result.message)
             }
@@ -93,13 +92,13 @@ class NewsSearchViewModel(
             }
 
             RequestResult.Success -> {
-                sendError("Успешно обновлено!")
+                _messages.emit(UiMessage.ShowSuccess("Успешно обновлено!"))
             }
         }
     }
 
     private suspend fun sendError(message: String) {
-        _events.emit(ShowError(message))
+        _messages.emit(UiMessage.ShowError(message))
     }
 
     override fun sendIntent(intent: NewsSearchIntent) {
@@ -201,7 +200,7 @@ class NewsSearchViewModel(
                 }.onEach { list ->
                     if (list.isEmpty()) {
 
-                        _events.emit(ShowError("Ничего не найдено!"))
+                        _messages.emit(UiMessage.ShowError("Ничего не найдено!"))
                     }
                     _state.update {
                         it.copy(
@@ -216,6 +215,6 @@ class NewsSearchViewModel(
 
     override suspend fun onError(e: Throwable) {
         _state.update { it.copy(isLoading = false) }
-        _events.emit(ShowError(e.message.orEmpty()))
+        _messages.emit(UiMessage.ShowError(e.message.orEmpty()))
     }
 }

@@ -4,6 +4,7 @@ import com.andreich.news.domain.usecase.AddToFavouritesUseCase
 import com.andreich.news.domain.usecase.LoadFavoritesNewsUseCase
 import com.andreich.news.domain.usecase.RemoveFromFavouritesUseCase
 import com.andreich.news.presentation.core.BaseViewModel
+import com.andreich.news.presentation.core.UiMessage
 import com.andreich.news.presentation.core.toNewsArticle
 import com.andreich.news.presentation.newsfavorite.NewsFavoriteEvent.NavigateToNewsDetail
 import com.andreich.news.presentation.newsfavorite.NewsFavoriteEvent.ShowUndoRemove
@@ -43,7 +44,7 @@ class NewsFavoriteViewModel(
                         }
                     }.onEmpty {
                         _state.update { it.copy(isLoading = false) }
-                        _events.emit(NewsFavoriteEvent.ShowError("Новостей нет!"))
+                        _messages.emit(UiMessage.ShowError("Новостей нет!"))
                     }.onEach { list ->
                         _state.update {
                             _state.value.copy(news = list, isLoading = false)
@@ -60,7 +61,7 @@ class NewsFavoriteViewModel(
 
     override suspend fun onError(e: Throwable) {
         _state.update { _state.value.copy(isLoading = false) }
-        _events.emit(NewsFavoriteEvent.ShowError(e.message.orEmpty()))
+        _messages.emit(UiMessage.ShowError(e.message.orEmpty()))
     }
 
 }

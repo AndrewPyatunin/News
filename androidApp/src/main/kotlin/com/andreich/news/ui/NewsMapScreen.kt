@@ -7,16 +7,19 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andreich.news.ext.KEY_NEWS_IDS
 import com.andreich.news.ext.toFeature
+import com.andreich.news.presentation.core.UiMessage
 import com.andreich.news.presentation.newsmap.NewsMapEvent
 import com.andreich.news.presentation.newsmap.NewsMapIntent
 import com.andreich.news.presentation.newsmap.NewsMapState
 import com.andreich.news.presentation.newsmap.NewsMapViewModel
+import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.compose.camera.CameraPosition
@@ -50,14 +53,10 @@ fun NewsMapRoute(
     val viewModel: NewsMapViewModel = koinViewModel()
     val state by viewModel.state.collectAsState()
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(viewModel) {
         viewModel.sendIntent(NewsMapIntent.StartObserving(isEnglish))
         viewModel.events.collect {
             when (it) {
-                is NewsMapEvent.ShowError -> {
-                    snackbarHostState.showSnackbar(it.message)
-                }
-
                 is NewsMapEvent.NavigateToNews -> {
                     onNavigateToNewsDetails(it.newsId)
                 }
@@ -65,6 +64,14 @@ fun NewsMapRoute(
                 is NewsMapEvent.NavigateToNewsCityList -> {
                     onNavigateToNewsCityList(it.ids)
                 }
+            }
+        }
+    }
+    LaunchedEffect(Unit) {
+        viewModel.messages.collect {
+            when (it) {
+                is UiMessage.ShowError -> snackbarHostState.showSnackbar(it.message)
+                is UiMessage.ShowSuccess -> snackbarHostState.showSnackbar(it.message)
             }
         }
     }
@@ -96,6 +103,7 @@ fun NewsMapScreen(state: NewsMapState, onMarkerClick: (List<Int>) -> Unit) {
             "https://tiles.openfreemap.org/styles/liberty"
         ),
     ) {
+        val scope = rememberCoroutineScope()
         val source = rememberGeoJsonSource(
             data = GeoJsonData.JsonString(features.toJson()),
 
@@ -131,6 +139,10 @@ fun NewsMapScreen(state: NewsMapState, onMarkerClick: (List<Int>) -> Unit) {
             color = const(Color.Blue),
             radius = const(20.dp),
             onClick = { features ->
+                scope.launch {
+                    cameraState.animateTo(finalPosition = cameraState.position.copy(zoom = cameraState.position.zoom.plus(1.0)))
+                }
+
                 ClickResult.Consume
             }
         )
@@ -142,7 +154,14 @@ fun NewsMapScreen(state: NewsMapState, onMarkerClick: (List<Int>) -> Unit) {
             filter = has("point_count"),
             textField = format(span(feature["point_count_abbreviated"].asString())),
             textColor = const(Color.White),
-            textSize = const(12.sp)
+            textSize = const(12.sp),
+            onClick = {
+                scope.launch {
+                    cameraState.animateTo(finalPosition = cameraState.position.copy(zoom = cameraState.position.zoom.plus(1.0)))
+                }
+
+                ClickResult.Consume
+            }
         )
     }
 }

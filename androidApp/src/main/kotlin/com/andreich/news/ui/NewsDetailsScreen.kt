@@ -44,7 +44,7 @@ import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.andreich.news.R
 import com.andreich.news.ext.NewsFabState
-import com.andreich.news.presentation.newsdetail.NewsDetailsEvent
+import com.andreich.news.presentation.core.UiMessage
 import com.andreich.news.presentation.newsdetail.NewsDetailsIntent
 import com.andreich.news.presentation.newsdetail.NewsDetailsState
 import com.andreich.news.presentation.newsdetail.NewsDetailsViewModel
@@ -228,19 +228,10 @@ fun NewsDetailsRoute(snackBarState: SnackbarHostState, newsId: Int, setFabState:
 
     LaunchedEffect(viewModel) {
         viewModel.sendIntent(NewsDetailsIntent.LoadNews(newsId))
-        viewModel.events.collect {
+        viewModel.messages.collect {
             when (it) {
-                is NewsDetailsEvent.AddToFavoriteSuccess -> {
-                    snackBarState.showSnackbar(message = it.message)
-                }
-
-                is NewsDetailsEvent.ShowError -> {
-                    snackBarState.showSnackbar(message = it.message)
-                }
-
-                is NewsDetailsEvent.RemoveFromFavoriteSuccess -> {
-                    snackBarState.showSnackbar(message = it.message)
-                }
+                is UiMessage.ShowError -> snackBarState.showSnackbar(message = it.message)
+                is UiMessage.ShowSuccess -> snackBarState.showSnackbar(message = it.message)
             }
         }
     }

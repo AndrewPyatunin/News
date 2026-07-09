@@ -45,6 +45,7 @@ import com.andreich.news.ext.MenuPopUpItem
 import com.andreich.news.ext.NewsItem
 import com.andreich.news.ext.TextContent
 import com.andreich.news.ext.TextHeader
+import com.andreich.news.presentation.core.UiMessage
 import com.andreich.news.presentation.newssearch.NewsSearchEvent
 import com.andreich.news.presentation.newssearch.NewsSearchIntent
 import com.andreich.news.presentation.newssearch.NewsSearchIntent.ClearQuery
@@ -187,10 +188,18 @@ fun NewsSearchRoute(snackbarState: SnackbarHostState, onNavigateToNewsDetails: (
     val viewModel: NewsSearchViewModel = koinViewModel()
     val state by viewModel.state.collectAsState()
 
+    LaunchedEffect(viewModel) {
+        viewModel.messages.collect {
+            when (it) {
+                is UiMessage.ShowError -> snackbarState.showSnackbar(it.message)
+                is UiMessage.ShowSuccess -> snackbarState.showSnackbar(it.message)
+            }
+        }
+    }
+
     LaunchedEffect(Unit) {
         viewModel.events.collect {
             when (it) {
-                is NewsSearchEvent.ShowError -> snackbarState.showSnackbar(message = it.message)
                 is NewsSearchEvent.NavigateTo -> onNavigateToNewsDetails(it.newsId)
             }
         }

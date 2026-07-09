@@ -9,7 +9,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
-import com.andreich.news.presentation.usersettings.SettingsEvent
+import com.andreich.news.presentation.core.UiMessage
 import com.andreich.news.presentation.usersettings.SettingsIntent
 import com.andreich.news.presentation.usersettings.SettingsViewModel
 import com.andreich.news.ui.MainScreen
@@ -31,10 +31,11 @@ class MainActivity : ComponentActivity() {
             LaunchedEffect(viewModel) {
                 viewModel.sendIntent(SettingsIntent.LoadUserSettings)
                 val value = viewModel.state.value.userSettings?.country?.name
-                viewModel.events.collect {
+                viewModel.messages.collect {
                     Log.d("Value", value.orEmpty())
                     when (it) {
-                        is SettingsEvent.ShowError -> {snackbarHostState.showSnackbar(it.message) }
+                        is UiMessage.ShowError -> snackbarHostState.showSnackbar(it.message)
+                        is UiMessage.ShowSuccess -> snackbarHostState.showSnackbar(it.message)
                     }
                 }
             }

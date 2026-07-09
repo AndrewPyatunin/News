@@ -2,6 +2,7 @@ package com.andreich.news.presentation.usersettings
 
 import com.andreich.news.domain.usecase.GetUserSettingsUseCase
 import com.andreich.news.presentation.core.BaseViewModel
+import com.andreich.news.presentation.core.UiMessage
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
@@ -24,6 +25,6 @@ class SettingsViewModel(
     }
 
     override suspend fun onError(e: Throwable) {
-        _events.emit(SettingsEvent.ShowError(e.message.orEmpty()))
+        _messages.emit(UiMessage.ShowError(e.message.orEmpty()))
     }
 }

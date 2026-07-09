@@ -21,6 +21,9 @@ abstract class BaseViewModel<S: UiState, E: UiEvent, I: UiIntent>(
     protected val _state = MutableStateFlow(initialState)
     val state: StateFlow<S> = _state.asStateFlow()
 
+    protected val _messages = MutableSharedFlow<UiMessage>()
+    val messages = _messages.asSharedFlow()
+
     protected val _events = MutableSharedFlow<E>()
     val events = _events.asSharedFlow()
 

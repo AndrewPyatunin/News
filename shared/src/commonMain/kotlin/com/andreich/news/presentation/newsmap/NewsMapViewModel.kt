@@ -2,6 +2,7 @@ package com.andreich.news.presentation.newsmap
 
 import com.andreich.news.domain.usecase.ObserveCitiesUseCase
 import com.andreich.news.presentation.core.BaseViewModel
+import com.andreich.news.presentation.core.UiMessage
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onEmpty
@@ -17,7 +18,7 @@ class NewsMapViewModel(
             when (intent) {
                 is NewsMapIntent.ClickItem -> {
                     when (intent.newsIds.size) {
-                        0 -> _events.emit(NewsMapEvent.ShowError("There are no news for this city"))
+                        0 -> _messages.emit(UiMessage.ShowError("There are no news for this city"))
                         1 -> _events.emit(NewsMapEvent.NavigateToNews(intent.newsIds[0]))
                         else -> {
                             _events.emit(NewsMapEvent.NavigateToNewsCityList(intent.newsIds))
@@ -30,7 +31,7 @@ class NewsMapViewModel(
                     observeCitiesUseCase(intent.isEnglish).onStart {
                         _state.update { _state.value.copy(isLoading = true) }
                     }.onEmpty {
-                        _events.emit(NewsMapEvent.ShowError("Городов не найдено!"))
+                        _messages.emit(UiMessage.ShowError("Городов не найдено!"))
                         _state.update { _state.value.copy(isLoading = false) }
                     }.onEach { list ->
                         _state.update { _state.value.copy(clusterItems = list, isLoading = false) }
@@ -43,6 +44,6 @@ class NewsMapViewModel(
 
     override suspend fun onError(e: Throwable) {
         _state.update { _state.value.copy(isLoading = false) }
-        _events.emit(NewsMapEvent.ShowError(e.message.orEmpty()))
+        _messages.emit(UiMessage.ShowError(e.message.orEmpty()))
     }
 }

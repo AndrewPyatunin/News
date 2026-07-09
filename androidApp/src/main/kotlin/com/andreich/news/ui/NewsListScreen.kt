@@ -44,6 +44,7 @@ import com.andreich.news.ext.NewsFabState
 import com.andreich.news.ext.NewsItem
 import com.andreich.news.ext.TextContent
 import com.andreich.news.ext.TextHeader
+import com.andreich.news.presentation.core.UiMessage
 import com.andreich.news.presentation.newslist.NewsListEvent
 import com.andreich.news.presentation.newslist.NewsListIntent
 import com.andreich.news.presentation.newslist.NewsListState
@@ -92,7 +93,9 @@ fun NewsListScreen(
             val chosenCountryLang = remember { mutableStateOf(WITHOUT to WITHOUT) }
             val themeDark = remember { mutableStateOf(true) }
             val listCountriesToLanguages = listOf(RUSSIA to RUSSIAN, US to ENGLISH)
-            Column(modifier = Modifier.fillMaxSize().verticalScroll(state = rememberScrollState())) {
+            Column(modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(state = rememberScrollState())) {
                 TextHeader("${stringResource(R.string.news_country)}\n(${stringResource(R.string.response_language)})")
                 HorizontalDivider()
                 RadioButtonSelection(radioOptions = listCountriesToLanguages, onParam = {
@@ -210,6 +213,24 @@ fun NewsListRoute(
 ) {
     val viewModel: NewsListViewModel = koinViewModel()
     val state by viewModel.state.collectAsState()
+    LaunchedEffect(viewModel) {
+        viewModel.messages.collect {
+            when(it) {
+                is UiMessage.ShowError -> {
+                    snackBarState.showSnackbar(
+                        message = it.message,
+                        duration = SnackbarDuration.Short
+                    )
+                }
+                is UiMessage.ShowSuccess -> {
+                    snackBarState.showSnackbar(
+                        message = it.message,
+                        duration = SnackbarDuration.Short
+                    )
+                }
+            }
+        }
+    }
 
     LaunchedEffect(viewModel) {
         viewModel.sendIntent(NewsListIntent.LoadConfiguration)
@@ -221,17 +242,11 @@ fun NewsListRoute(
                     viewModel.sendIntent(NewsListIntent.ShowMenu)
                 }
             ))
+
         viewModel.events.collect {
             when (it) {
                 is NewsListEvent.NavigateTo -> {
                     onNavigateToNewsDetails(it.id)
-                }
-
-                is NewsListEvent.ShowError -> {
-                    snackBarState.showSnackbar(
-                        message = it.message,
-                        duration = SnackbarDuration.Long
-                    )
                 }
 
                 NewsListEvent.SettingsUpdated -> viewModel.sendIntent(NewsListIntent.UpdateNews)

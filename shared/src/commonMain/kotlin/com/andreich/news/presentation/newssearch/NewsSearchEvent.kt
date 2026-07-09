@@ -4,7 +4,5 @@ import com.andreich.news.presentation.core.UiEvent
 
 sealed interface NewsSearchEvent : UiEvent {
 
-    class ShowError(val message: String) : NewsSearchEvent
-
     class NavigateTo(val newsId: Int) : NewsSearchEvent
 }

@@ -4,8 +4,6 @@ import com.andreich.news.presentation.core.UiEvent
 
 sealed interface NewsFavoriteEvent : UiEvent {
 
-    class ShowError(val message: String) : NewsFavoriteEvent
-
     class NavigateToNewsDetail(val newsId: Int) : NewsFavoriteEvent
 
     class ShowUndoRemove(val newsId: Int) : NewsFavoriteEvent

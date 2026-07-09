@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andreich.news.R
 import com.andreich.news.ext.NewsItem
+import com.andreich.news.presentation.core.UiMessage
 import com.andreich.news.presentation.newsfavorite.NewsFavoriteEvent
 import com.andreich.news.presentation.newsfavorite.NewsFavoriteIntent
 import com.andreich.news.presentation.newsfavorite.NewsFavoriteState
@@ -41,24 +42,25 @@ fun NewsFavoriteRoute(
 ) {
     val viewModel: NewsFavoriteViewModel = koinViewModel()
     val state by viewModel.state.collectAsState()
-    val messageError = stringResource(R.string.remove_success)
+    val messageSuccess = stringResource(R.string.remove_success)
     val removeMessage = stringResource(R.string.news_removed)
     val undoLabel = stringResource(R.string.undo)
 
     LaunchedEffect(Unit) {
+        viewModel.messages.collect {
+            when (it) {
+                is UiMessage.ShowError -> snackbarHostState.showSnackbar(message = it.message)
+                is UiMessage.ShowSuccess -> snackbarHostState.showSnackbar(message = it.message)
+            }
+        }
+    }
+
+    LaunchedEffect(viewModel) {
         viewModel.sendIntent(NewsFavoriteIntent.LoadFavourites)
         viewModel.events.collect {
             when (it) {
                 is NewsFavoriteEvent.NavigateToNewsDetail -> {
                     onNavigateToNewsDetails(it.newsId)
-                }
-
-                NewsFavoriteEvent.RemoveSuccess -> {
-                    snackbarHostState.showSnackbar(message = messageError)
-                }
-
-                is NewsFavoriteEvent.ShowError -> {
-                    snackbarHostState.showSnackbar(message = it.message)
                 }
 
                 is NewsFavoriteEvent.ShowUndoRemove -> {
@@ -72,6 +74,8 @@ fun NewsFavoriteRoute(
                         viewModel.sendIntent(NewsFavoriteIntent.UndoRemove(it.newsId))
                     }
                 }
+
+                NewsFavoriteEvent.RemoveSuccess -> snackbarHostState.showSnackbar(messageSuccess)
             }
         }
     }

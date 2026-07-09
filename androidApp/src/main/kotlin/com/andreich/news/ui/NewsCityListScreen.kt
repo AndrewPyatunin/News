@@ -11,6 +11,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import com.andreich.news.ext.NewsItem
+import com.andreich.news.presentation.core.UiMessage
 import com.andreich.news.presentation.newscitylist.NewsCityListEvent
 import com.andreich.news.presentation.newscitylist.NewsCityListIntent
 import com.andreich.news.presentation.newscitylist.NewsCityListState
@@ -31,15 +32,23 @@ fun NewsCityListRoute(
     )
     val state = viewModel.state.collectAsState()
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(viewModel) {
         viewModel.sendIntent(NewsCityListIntent.LoadNewsList(newsIds))
         viewModel.events.collect {
             when (it) {
                 is NewsCityListEvent.NavigateToDetails -> {
                     onNewsDetailsNavigate(it.newsId)
                 }
-
-                is NewsCityListEvent.ShowError -> {
+            }
+        }
+    }
+    LaunchedEffect(Unit) {
+        viewModel.messages.collect {
+            when (it) {
+                is UiMessage.ShowError -> {
+                    snackbarHostState.showSnackbar(message = it.message)
+                }
+                is UiMessage.ShowSuccess -> {
                     snackbarHostState.showSnackbar(message = it.message)
                 }
             }
@@ -48,7 +57,6 @@ fun NewsCityListRoute(
     NewsCityListScreen(state.value) {
         viewModel.sendIntent(NewsCityListIntent.NewsClick(it))
     }
-
 }
 
 @Composable

@@ -2,6 +2,7 @@ package com.andreich.news.presentation.newscitylist
 
 import com.andreich.news.domain.usecase.LoadNewsByIdsUseCase
 import com.andreich.news.presentation.core.BaseViewModel
+import com.andreich.news.presentation.core.UiMessage
 import com.andreich.news.presentation.core.toNewsArticle
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.map
@@ -28,7 +29,7 @@ class NewsCityListViewModel(
                             }
                         }.onEmpty {
                             _state.update { it.copy(isLoading = false) }
-                            _events.emit(NewsCityListEvent.ShowError(message = "Новостей не найдено!"))
+                            _messages.emit(UiMessage.ShowError(message = "Новостей не найдено!"))
                         }.onEach { list ->
                             _state.update {
                                 _state.value.copy(newsList = list, isLoading = false)
@@ -46,6 +47,6 @@ class NewsCityListViewModel(
 
     override suspend fun onError(e: Throwable) {
         _state.update { _state.value.copy(isLoading = false) }
-        _events.emit(NewsCityListEvent.ShowError(e.message.orEmpty()))
+        _messages.emit(UiMessage.ShowError(e.message.orEmpty()))
     }
 }

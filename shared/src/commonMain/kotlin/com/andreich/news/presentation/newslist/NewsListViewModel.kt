@@ -6,6 +6,7 @@ import com.andreich.news.domain.usecase.LoadNewsListUseCase
 import com.andreich.news.domain.usecase.UpdateNewsUseCase
 import com.andreich.news.domain.usecase.UpdateUserSettingsUseCase
 import com.andreich.news.presentation.core.BaseViewModel
+import com.andreich.news.presentation.core.UiMessage
 import com.andreich.news.presentation.core.toNewsArticle
 import com.andreich.news.presentation.newslist.NewsListEvent.NavigateTo
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -28,6 +29,7 @@ class NewsListViewModel(
     private val updateNewsUseCase: UpdateNewsUseCase
 ) : BaseViewModel<NewsListState, NewsListEvent, NewsListIntent>(NewsListState()) {
 
+    private var lastError: String? = null
     private val PAGE_SIZE = 12
     private var limit = MutableStateFlow(PAGE_SIZE)
 
@@ -44,13 +46,10 @@ class NewsListViewModel(
                 }.map { list -> list.map { it.toNewsArticle() } }.onStart {
                     _state.update { it.copy(isLoading = true) }
                 }.onEach { list ->
-                    if (list.isEmpty()) {
-                        _events.emit(NewsListEvent.ShowError("Ошибка, новостей нет! Проверьте подключение к интернету!"))
-                    }
                     _state.update { it.copy(newsList = list, isLoading = false) }
                 }.onEmpty {
                     _state.update { it.copy(isLoading = false) }
-                    _events.emit(NewsListEvent.ShowError("Новостей нет!"))
+                    _messages.emit(UiMessage.ShowError("Новостей нет!"))
                 }.collect()
         }
 
@@ -62,24 +61,25 @@ class NewsListViewModel(
             settings?.let {
                 when (val result = updateNewsUseCase(it.language?.name ?: "ru", it.country?.name ?: "ru")) {
                     is RequestResult.Failure.NoInternet -> {
-                        onRequestError(result.message)
+                        onRequestError(/*result.message*/ "Отсутствует интернет!")
                     }
                     is RequestResult.Failure.Serialization -> {
                         onRequestError(result.message)
                     }
                     is RequestResult.Failure.Server -> {
-                        onRequestError(result.message)
+                        onRequestError(/*result.message*/"Серверная Ошибка")
                     }
                     is RequestResult.Failure.Timeout -> {
                         onRequestError(result.message)
                     }
                     is RequestResult.Failure.Unauthorized -> {
-                        onRequestError(result.message)
+                        onRequestError(/*result.message*/"Пользователь не авторизован!")
                     }
                     is RequestResult.Failure.Unknown -> {
-                        onRequestError(result.message)
+                        onRequestError(/*result.message*/"У вас не осталось токенов, обновите план!")
                     }
                     RequestResult.Success -> {
+                        _messages.emit(UiMessage.ShowSuccess("Новости успешно обновлены!"))
                     }
             }
 
@@ -131,7 +131,9 @@ class NewsListViewModel(
     }
 
     private suspend fun onRequestError(error: String) {
-        _events.emit(NewsListEvent.ShowError(error))
+        if (lastError == error) return
+        lastError = error
+        _messages.emit(UiMessage.ShowError(error))
     }
 
     private fun loadUserSettingsUseCase() {
@@ -147,6 +149,6 @@ class NewsListViewModel(
 
     override suspend fun onError(e: Throwable) {
         _state.update { it.copy(isLoading = false) }
-        _events.emit(NewsListEvent.ShowError(e.message.orEmpty()))
+        _messages.emit(UiMessage.ShowError(e.message.orEmpty()))
     }
 }
