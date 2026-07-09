@@ -95,7 +95,7 @@ private suspend fun searchApiCall(param: String, paramsFilter: ParamsFilter?): L
 }
 
 private suspend fun getTopNewsApiCall(language: String, country: String): List<News> {
-    return newsApi.getNews(language, country).topNews.map {
+    return newsApi.getNews(language = language, country).topNews.map {
         it.news[0].toNews()
     }
 }
@@ -109,8 +109,10 @@ suspend fun getRequestResult(
     return safeApiCall(
         apiCall = apiCall,
         onSuccess = {
-            newsDao.insertCacheTime(CacheEntity(requestType, currentTime))
-            newsDao.insertNews(it.map { it.toEntity() })
+            newsDao.insertNews(it.map { it.toEntity() }).run {
+                newsDao.insertCacheTime(CacheEntity(requestType, currentTime))
+            }
+
         }
     )
 }

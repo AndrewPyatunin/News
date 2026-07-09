@@ -1,6 +1,5 @@
 package com.andreich.news.presentation.newsdetail
 
-import com.andreich.news.NewsLogger
 import com.andreich.news.domain.usecase.AddToFavouritesUseCase
 import com.andreich.news.domain.usecase.LoadFavoritesNewsUseCase
 import com.andreich.news.domain.usecase.LoadSingleNewsUseCase
@@ -55,7 +54,6 @@ class NewsDetailsViewModel(
                                 chunks = news.content.prepareNewsContent()
                             )
                         }
-                        NewsLogger().log("NEWS_CONTENT", news.content.prepareNewsContent().size.toString())
                     }
                 }
 

@@ -214,7 +214,6 @@ fun NewsListRoute(
     LaunchedEffect(viewModel) {
         viewModel.sendIntent(NewsListIntent.LoadConfiguration)
         viewModel.sendIntent(NewsListIntent.ObserveNews)
-        viewModel.sendIntent(NewsListIntent.UpdateNews)
         onSetAppBarState(
             AppBarState(
                 showFilter = state.menuExpanded,
@@ -234,6 +233,8 @@ fun NewsListRoute(
                         duration = SnackbarDuration.Long
                     )
                 }
+
+                NewsListEvent.SettingsUpdated -> viewModel.sendIntent(NewsListIntent.UpdateNews)
             }
         }
     }

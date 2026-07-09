@@ -33,26 +33,32 @@ class NewsListViewModel(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun observeNews() {
-        _state.mapNotNull { it.userSettings }
-            .distinctUntilChanged()
-            .combine(limit) { settings, limit ->
-                Triple(settings.language?.name?.lowercase(), settings.country?.name?.lowercase(), limit)
-            }
-            .flatMapLatest { (language, country, limit) ->
-                loadNewsListUseCase(language, country, limit)
-            }.map { list -> list.map { it.toNewsArticle() } }.onStart {
-                _state.update { it.copy(isLoading = true) }
-            }.onEach { list ->
-                _state.update { it.copy(newsList = list, isLoading = false) }
-            }.onEmpty {
-                _state.update { it.copy(isLoading = false) }
-                _events.emit(NewsListEvent.ShowError("Новостей нет!"))
-            }.collect()
+        launch {
+            _state.mapNotNull { it.userSettings }
+                .distinctUntilChanged()
+                .combine(limit) { settings, limit ->
+                    Triple(settings.language?.name?.lowercase(), settings.country?.name?.lowercase(), limit)
+                }
+                .flatMapLatest { (language, country, limit) ->
+                    loadNewsListUseCase(language, country, limit)
+                }.map { list -> list.map { it.toNewsArticle() } }.onStart {
+                    _state.update { it.copy(isLoading = true) }
+                }.onEach { list ->
+                    if (list.isEmpty()) {
+                        _events.emit(NewsListEvent.ShowError("Ошибка, новостей нет! Проверьте подключение к интернету!"))
+                    }
+                    _state.update { it.copy(newsList = list, isLoading = false) }
+                }.onEmpty {
+                    _state.update { it.copy(isLoading = false) }
+                    _events.emit(NewsListEvent.ShowError("Новостей нет!"))
+                }.collect()
+        }
+
     }
 
     private fun updateNews() {
-        val settings = state.value.userSettings
         launch {
+            val settings = state.value.userSettings
             settings?.let {
                 when (val result = updateNewsUseCase(it.language?.name ?: "ru", it.country?.name ?: "ru")) {
                     is RequestResult.Failure.NoInternet -> {
@@ -134,6 +140,7 @@ class NewsListViewModel(
                 _state.update {
                     it.copy(userSettings = settings)
                 }
+                _events.emit(NewsListEvent.SettingsUpdated)
             }.collect()
         }
     }

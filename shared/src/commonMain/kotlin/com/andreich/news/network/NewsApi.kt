@@ -30,6 +30,7 @@ class NewsApi(
 
         const val DATE = "date"
 
+        const val EARLIST_DATE = "earlist-publish-date"
     }
 
     suspend fun getNews(language: String = EN, sourceCountry: String = US): TopNewsResultDto {
@@ -39,7 +40,6 @@ class NewsApi(
                 parameters.apply {
                     append(SOURCE_COUNTRY, sourceCountry)
                     append(LANGUAGE, language)
-                    append(DATE, date)
                 }
             }
         }.body()
@@ -51,7 +51,6 @@ class NewsApi(
                 path(SEARCH_NEWS)
                 parameters.apply {
                     append(TEXT, param)
-                    append(DATE, date)
                     paramsFilter?.let {
                         it.country?.let { append(SOURCE_COUNTRY, it) }
                         it.language?.let { append(LANGUAGE, it) }
