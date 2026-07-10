@@ -1,6 +1,5 @@
 package com.andreich.news.ext
 
-import android.content.Context
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -53,7 +52,7 @@ fun NewsItem(news: NewsArticle, onClickNewsListener: () -> Unit) {
     ) {
         val isLoading = remember(news.id) { mutableStateOf(true) }
         val imageLoader: ImageLoader = koinInject()
-        val imageRequestFactory = ImageRequestFactory(context)
+        val imageRequestFactory = remember(context) { ImageRequestFactory(context) }
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -106,14 +105,6 @@ fun NewsItem(news: NewsArticle, onClickNewsListener: () -> Unit) {
     }
 }
 
-@Composable
-private fun String.imageBuild(context: Context): ImageRequest {
-    return remember(this) {
-        ImageRequest.Builder(context)
-            .data(this)
-            .build()
-    }
-}
 @Composable
 private fun MyAsyncImage(
     url: String,

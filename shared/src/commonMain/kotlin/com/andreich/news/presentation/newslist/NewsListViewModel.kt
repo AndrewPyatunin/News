@@ -30,11 +30,15 @@ class NewsListViewModel(
 ) : BaseViewModel<NewsListState, NewsListEvent, NewsListIntent>(NewsListState()) {
 
     private var lastError: String? = null
-    private val PAGE_SIZE = 12
     private var limit = MutableStateFlow(PAGE_SIZE)
 
+    companion object {
+
+        private const val PAGE_SIZE = 12
+    }
+
     @OptIn(ExperimentalCoroutinesApi::class)
-    suspend fun observeNews() {
+    fun observeNews() {
         launch {
             _state.mapNotNull { it.userSettings }
                 .distinctUntilChanged()
@@ -61,25 +65,24 @@ class NewsListViewModel(
             settings?.let {
                 when (val result = updateNewsUseCase(it.language?.name ?: "ru", it.country?.name ?: "ru")) {
                     is RequestResult.Failure.NoInternet -> {
-                        onRequestError(/*result.message*/ "Отсутствует интернет!")
+                        onRequestError( "Отсутствует интернет!")
                     }
                     is RequestResult.Failure.Serialization -> {
                         onRequestError(result.message)
                     }
                     is RequestResult.Failure.Server -> {
-                        onRequestError(/*result.message*/"Серверная Ошибка")
+                        onRequestError("Серверная Ошибка")
                     }
                     is RequestResult.Failure.Timeout -> {
                         onRequestError(result.message)
                     }
                     is RequestResult.Failure.Unauthorized -> {
-                        onRequestError(/*result.message*/"Пользователь не авторизован!")
+                        onRequestError("Пользователь не авторизован!")
                     }
                     is RequestResult.Failure.Unknown -> {
-                        onRequestError(/*result.message*/"У вас не осталось токенов, обновите план!")
+                        onRequestError("У вас не осталось токенов, обновите план!")
                     }
                     RequestResult.Success -> {
-                        _messages.emit(UiMessage.ShowSuccess("Новости успешно обновлены!"))
                     }
             }
 

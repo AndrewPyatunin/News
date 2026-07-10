@@ -137,7 +137,7 @@ fun NewsListScreen(
         }
     }
     val fabVisual = remember { mutableStateOf(false) }
-    val showFab by remember(state) {
+    val showFab by remember(Unit) {
         derivedStateOf {
             lazyListState.lastScrolledBackward && fabVisual.value
 
@@ -156,9 +156,11 @@ fun NewsListScreen(
     }
     val scope = rememberCoroutineScope()
 
-    val scrollToTop = {
-        scope.launch {
-            lazyListState.scrollToItem(0)
+    val scrollToTop = remember(scope) {
+        {
+            scope.launch {
+                lazyListState.scrollToItem(0)
+            }
         }
     }
     LaunchedEffect(showFab) {
@@ -173,8 +175,6 @@ fun NewsListScreen(
         Modifier.background(MaterialTheme.colorScheme.background),
         state = lazyListState
     ) {
-
-
         if (state.isLoading && state.newsList.isEmpty()) {
             item {
                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -213,24 +213,6 @@ fun NewsListRoute(
 ) {
     val viewModel: NewsListViewModel = koinViewModel()
     val state by viewModel.state.collectAsState()
-    LaunchedEffect(viewModel) {
-        viewModel.messages.collect {
-            when(it) {
-                is UiMessage.ShowError -> {
-                    snackBarState.showSnackbar(
-                        message = it.message,
-                        duration = SnackbarDuration.Short
-                    )
-                }
-                is UiMessage.ShowSuccess -> {
-                    snackBarState.showSnackbar(
-                        message = it.message,
-                        duration = SnackbarDuration.Short
-                    )
-                }
-            }
-        }
-    }
 
     LaunchedEffect(viewModel) {
         viewModel.sendIntent(NewsListIntent.LoadConfiguration)
@@ -254,6 +236,24 @@ fun NewsListRoute(
         }
     }
 
+    LaunchedEffect(Unit) {
+        viewModel.messages.collect {
+            when(it) {
+                is UiMessage.ShowError -> {
+                    snackBarState.showSnackbar(
+                        message = it.message,
+                        duration = SnackbarDuration.Short
+                    )
+                }
+                is UiMessage.ShowSuccess -> {
+                    snackBarState.showSnackbar(
+                        message = it.message,
+                        duration = SnackbarDuration.Short
+                    )
+                }
+            }
+        }
+    }
     NewsListScreen(
         state = state,
         onClickNewsListener = {

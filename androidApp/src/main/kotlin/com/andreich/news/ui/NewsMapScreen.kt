@@ -43,6 +43,13 @@ import org.maplibre.geojson.FeatureCollection
 import org.maplibre.spatialk.geojson.Feature.Companion.getStringProperty
 import org.maplibre.spatialk.geojson.Position
 
+private const val BASE_STYLE_URI = "https://tiles.openfreemap.org/styles/liberty"
+private const val POINT_COUNT_KEY = "point_count"
+private const val MARKERS_ID = "markers"
+private const val CLUSTERS_ID = "clusters"
+private const val CLUSTER_ID = "cluster-count"
+private const val FONT_STYLE = "Noto Sans Regular"
+private const val FEATURE_KEY = "point_count_abbreviated"
 @Composable
 fun NewsMapRoute(
     snackbarHostState: SnackbarHostState,
@@ -99,9 +106,7 @@ fun NewsMapScreen(state: NewsMapState, onMarkerClick: (List<Int>) -> Unit) {
     MaplibreMap(
         modifier = Modifier.fillMaxSize(),
         cameraState = cameraState,
-        baseStyle = BaseStyle.Uri(
-            "https://tiles.openfreemap.org/styles/liberty"
-        ),
+        baseStyle = BaseStyle.Uri(BASE_STYLE_URI),
     ) {
         val scope = rememberCoroutineScope()
         val source = rememberGeoJsonSource(
@@ -114,9 +119,9 @@ fun NewsMapScreen(state: NewsMapState, onMarkerClick: (List<Int>) -> Unit) {
             )
         )
         CircleLayer(
-            id = "markers",
+            id = MARKERS_ID,
             source = source,
-            filter = !(has("point_count")),
+            filter = !(has(POINT_COUNT_KEY)),
             color = const(Color.Red),
             radius = const(8.dp),
             onClick = { features ->
@@ -133,12 +138,12 @@ fun NewsMapScreen(state: NewsMapState, onMarkerClick: (List<Int>) -> Unit) {
         )
 
         CircleLayer(
-            id = "clusters",
+            id = CLUSTERS_ID,
             source = source,
-            filter = has("point_count"),
+            filter = has(POINT_COUNT_KEY),
             color = const(Color.Blue),
             radius = const(20.dp),
-            onClick = { features ->
+            onClick = { _ ->
                 scope.launch {
                     cameraState.animateTo(finalPosition = cameraState.position.copy(zoom = cameraState.position.zoom.plus(1.0)))
                 }
@@ -148,16 +153,16 @@ fun NewsMapScreen(state: NewsMapState, onMarkerClick: (List<Int>) -> Unit) {
         )
 
         SymbolLayer(
-            id = "cluster-count",
-            textFont = const(listOf(const("Noto Sans Regular"))),
+            id = CLUSTER_ID,
+            textFont = const(listOf(const(FONT_STYLE))),
             source = source,
-            filter = has("point_count"),
-            textField = format(span(feature["point_count_abbreviated"].asString())),
+            filter = has(POINT_COUNT_KEY),
+            textField = format(span(feature[FEATURE_KEY].asString())),
             textColor = const(Color.White),
             textSize = const(12.sp),
             onClick = {
                 scope.launch {
-                    cameraState.animateTo(finalPosition = cameraState.position.copy(zoom = cameraState.position.zoom.plus(1.0)))
+                    cameraState.animateTo(finalPosition = cameraState.position.copy(zoom = cameraState.position.zoom.plus(2.0)))
                 }
 
                 ClickResult.Consume
