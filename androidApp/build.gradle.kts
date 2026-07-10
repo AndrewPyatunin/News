@@ -12,6 +12,10 @@ kotlin {
     compilerOptions {
         jvmTarget = JvmTarget.JVM_11
     }
+    composeCompiler {
+        reportsDestination = layout.buildDirectory.dir("compose_compiler")
+        metricsDestination = layout.buildDirectory.dir("compose_compiler")
+    }
 }
 dependencies {
     implementation(libs.androidx.exifinterface)

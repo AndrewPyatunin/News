@@ -3,7 +3,7 @@ package com.andreich.news.domain.model
 data class UserSettings(
     val country: Country? = null,
     val language: Language? = null,
-    val darkTheme: Boolean
+    val darkTheme: Boolean? = null
 )
 
 

@@ -131,9 +131,7 @@ class NewsSearchViewModel(
                 is NewsSearchIntent.SuggestionClicked -> {
                     searchNews(query = intent.suggestion, paramsFilter = state.value.paramsFilter)
                     updateSearch(intent.suggestion, state.value.paramsFilter).run {
-                        saveSearch(intent.suggestion).run {
-
-                        }
+                        saveSearch(intent.suggestion)
                     }
                 }
 
@@ -168,15 +166,14 @@ class NewsSearchViewModel(
     private fun ParamsFilter.toUserSettings(isDarkTheme: Boolean): UserSettings {
         return UserSettings(
             country = country?.toCountryEnum(),
-            language = language?.toLanguageEnum(),
-            darkTheme = isDarkTheme
+            language = language?.toLanguageEnum()
         )
     }
 
     private fun updateUserSettings() {
         launch {
             getUserSettingsUseCase().distinctUntilChanged().onEach { settings ->
-                _state.update { it.copy(userSettings = settings) }
+                _state.update { it.copy(userSettings = it.userSettings?.copy(country = settings.country, language = settings.language)) }
             }.collect()
         }
     }
