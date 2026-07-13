@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
@@ -65,9 +66,9 @@ fun NewsListScreen(
     onNextPageLoad: () -> Unit,
     onDismiss: () -> Unit,
     onSaveConfigClick: (UserSettings) -> Unit,
-    setFabState: (NewsFabState) -> Unit
+    setFabState: (NewsFabState) -> Unit,
+    lazyListState: LazyListState
 ) {
-    val lazyListState = rememberLazyListState()
     val shouldLoadMore by remember(lazyListState, state.newsList.size) {
         derivedStateOf {
             val lastVisible = lazyListState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
@@ -80,59 +81,62 @@ fun NewsListScreen(
             onNextPageLoad()
         }
     }
-    if (state.menuExpanded) {
-        MenuPopUpItem(
-            onDismiss = onDismiss, modifier = Modifier.padding(top = 8.dp),
-        ) {
-            val RUSSIA = stringResource(R.string.russia)
-            val RUSSIAN = stringResource(R.string.russian)
-            val ENGLISH = stringResource(R.string.english)
-            val US = stringResource(R.string.us)
-            val WITHOUT = stringResource(R.string.without_param)
+    MenuPopUpItem(
+        onDismiss = onDismiss, modifier = Modifier.padding(top = 8.dp), visible = state.menuExpanded
+    ) {
+        val RUSSIA = stringResource(R.string.russia)
+        val RUSSIAN = stringResource(R.string.russian)
+        val ENGLISH = stringResource(R.string.english)
+        val US = stringResource(R.string.us)
 
-            val chosenCountryLang = remember { mutableStateOf(WITHOUT to WITHOUT) }
-            val themeDark = remember { mutableStateOf(true) }
-            val listCountriesToLanguages = listOf(RUSSIA to RUSSIAN, US to ENGLISH)
-            Column(modifier = Modifier
+        val chosenCountryLang = remember { mutableStateOf(RUSSIA to RUSSIAN) }
+        val themeDark = remember { mutableStateOf(true) }
+        val listCountriesToLanguages = listOf(RUSSIA to RUSSIAN, US to ENGLISH)
+        Column(
+            modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(state = rememberScrollState())) {
-                TextHeader("${stringResource(R.string.news_country)}\n(${stringResource(R.string.response_language)})")
-                HorizontalDivider()
-                RadioButtonSelection(radioOptions = listCountriesToLanguages, onParam = {
-                    chosenCountryLang.value = it
-                }) { text ->
-                    Text(
-                        fontSize = 18.sp,
-                        text = " ${stringResource(R.string.country)} ${text.first} (${text.second} ${
-                            stringResource(
-                                R.string.language
-                            )
-                        })",
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(start = 16.dp)
-                    )
-                }
-                HorizontalDivider()
-                TextHeader(stringResource(R.string.theme))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    TextContent(stringResource(R.string.light))
-                    Switch(
-                        checked = themeDark.value,
-                        onCheckedChange = {
-                            themeDark.value = it
-                        }
-                    )
-                    TextContent(stringResource(R.string.dark))
-                }
-                AnimatedButton(text = stringResource(R.string.configure)) {
-                    onSaveConfigClick(
-                        UserSettings(
-                            country = when(chosenCountryLang.value.first) { RUSSIA -> Country.RU; US -> Country.US; else -> null },
-                            language = when(chosenCountryLang.value.second) { RUSSIAN -> Language.RU; ENGLISH -> Language.EN; else -> null },
-                            darkTheme = themeDark.value
+                .verticalScroll(state = rememberScrollState())
+        ) {
+            TextHeader("${stringResource(R.string.news_country)}\n(${stringResource(R.string.response_language)})")
+            HorizontalDivider()
+            RadioButtonSelection(radioOptions = listCountriesToLanguages, onParam = {
+                chosenCountryLang.value = it
+            }) { text ->
+                Text(
+                    fontSize = 18.sp,
+                    text = " ${stringResource(R.string.country)} ${text.first} (${text.second} ${
+                        stringResource(
+                            R.string.language
                         )
+                    })",
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(start = 16.dp)
+                )
+            }
+            HorizontalDivider()
+            TextHeader(stringResource(R.string.theme))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                TextContent(stringResource(R.string.light))
+                Switch(
+                    checked = themeDark.value,
+                    onCheckedChange = {
+                        themeDark.value = it
+                    }
+                )
+                TextContent(stringResource(R.string.dark))
+            }
+            AnimatedButton(text = stringResource(R.string.configure)) {
+                onSaveConfigClick(
+                    UserSettings(
+                        country = when (chosenCountryLang.value.first) {
+                            RUSSIA -> Country.RU; US -> Country.US; else -> null
+                        },
+                        language = when (chosenCountryLang.value.second) {
+                            RUSSIAN -> Language.RU; ENGLISH -> Language.EN; else -> null
+                        },
+                        darkTheme = themeDark.value
                     )
-                }
+                )
             }
         }
     }
@@ -149,7 +153,7 @@ fun NewsListScreen(
                 if (scrolling) {
                     fabVisual.value = true
                 } else {
-                    delay(1500.milliseconds)
+                    delay(1000.milliseconds)
                     fabVisual.value = false
                 }
             }
@@ -213,10 +217,9 @@ fun NewsListRoute(
 ) {
     val viewModel: NewsListViewModel = koinViewModel()
     val state by viewModel.state.collectAsState()
+    val lazyListState = rememberLazyListState()
 
-    LaunchedEffect(viewModel) {
-        viewModel.sendIntent(NewsListIntent.LoadConfiguration)
-        viewModel.sendIntent(NewsListIntent.ObserveNews)
+    LaunchedEffect(state.menuExpanded) {
         onSetAppBarState(
             AppBarState(
                 showFilter = state.menuExpanded,
@@ -224,6 +227,12 @@ fun NewsListRoute(
                     viewModel.sendIntent(NewsListIntent.ShowMenu)
                 }
             ))
+    }
+
+    LaunchedEffect(viewModel) {
+        viewModel.sendIntent(NewsListIntent.LoadConfiguration)
+        viewModel.sendIntent(NewsListIntent.ObserveNews)
+
 
         viewModel.events.collect {
             when (it) {
@@ -238,13 +247,14 @@ fun NewsListRoute(
 
     LaunchedEffect(Unit) {
         viewModel.messages.collect {
-            when(it) {
+            when (it) {
                 is UiMessage.ShowError -> {
                     snackBarState.showSnackbar(
                         message = it.message,
                         duration = SnackbarDuration.Short
                     )
                 }
+
                 is UiMessage.ShowSuccess -> {
                     snackBarState.showSnackbar(
                         message = it.message,
@@ -261,11 +271,12 @@ fun NewsListRoute(
         }, onNextPageLoad = {
             viewModel.sendIntent(NewsListIntent.LoadNextPage)
         }, onDismiss = {
-            viewModel.sendIntent(NewsListIntent.ShowMenu)
+            viewModel.sendIntent(NewsListIntent.HideMenu)
         },
         onSaveConfigClick = {
             viewModel.sendIntent(NewsListIntent.ConfigureSettings(it))
         },
-        setFabState = setFabState
+        setFabState = setFabState,
+        lazyListState = lazyListState
     )
 }

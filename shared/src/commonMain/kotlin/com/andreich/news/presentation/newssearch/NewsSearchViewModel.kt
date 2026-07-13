@@ -157,16 +157,16 @@ class NewsSearchViewModel(
                             popUpMenuShowed = false
                         )
                     }
-                    updateUserSettingsUseCase(intent.paramsFilter.toUserSettings(intent.isDarkTheme))
+                    updateUserSettingsUseCase(intent.paramsFilter.toUserSettings())
                 }
             }
         }
     }
 
-    private fun ParamsFilter.toUserSettings(isDarkTheme: Boolean): UserSettings {
+    private fun ParamsFilter.toUserSettings(): UserSettings {
         return UserSettings(
             country = country?.toCountryEnum(),
-            language = language?.toLanguageEnum()
+            language = language?.toLanguageEnum(),
         )
     }
 

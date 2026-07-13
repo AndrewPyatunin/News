@@ -2,7 +2,6 @@ package com.andreich.news.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -68,7 +67,6 @@ fun NewsSearchScreen(
     state: NewsSearchState,
     onIntent: (NewsSearchIntent) -> Unit
 ) {
-    val isDarkTheme = isSystemInDarkTheme()
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -163,12 +161,11 @@ fun NewsSearchScreen(
             }
 
         }
-        if (state.popUpMenuShowed) {
             NewsPopUp(onSaveFilterParam = {
-                onIntent(SaveFilterParams(it, isDarkTheme))
+                onIntent(SaveFilterParams(it))
             }, onDismiss = {
                 onIntent(FilterMenuClick)
-            })
+            }, state = state)
         }
         val lazyListState = rememberLazyListState()
         if (state.resultList.isNotEmpty()) {
@@ -180,7 +177,6 @@ fun NewsSearchScreen(
                 }
             }
         }
-    }
 }
 
 @Composable
@@ -237,7 +233,7 @@ fun NewsSearchRoute(snackbarState: SnackbarHostState, onNavigateToNewsDetails: (
                 }
 
                 is SaveFilterParams -> {
-                    viewModel.sendIntent(SaveFilterParams(it.paramsFilter, it.isDarkTheme))
+                    viewModel.sendIntent(SaveFilterParams(it.paramsFilter))
                 }
             }
         }
@@ -246,7 +242,7 @@ fun NewsSearchRoute(snackbarState: SnackbarHostState, onNavigateToNewsDetails: (
 
 
 @Composable
-fun NewsPopUp(onSaveFilterParam: (ParamsFilter) -> Unit, onDismiss: () -> Unit) {
+fun NewsPopUp(onSaveFilterParam: (ParamsFilter) -> Unit, onDismiss: () -> Unit, state: NewsSearchState) {
     val scrollableState = rememberScrollState()
 
     val RUSSIA = stringResource(R.string.russia)
@@ -255,14 +251,13 @@ fun NewsPopUp(onSaveFilterParam: (ParamsFilter) -> Unit, onDismiss: () -> Unit) 
     val US = stringResource(R.string.us)
     val WITHOUT = stringResource(R.string.without_param)
     val NONE = stringResource(R.string.none)
-    val NO = stringResource(R.string.no)
-    val EMPTY = ""
     val listCountriesToLanguages: List<Pair<String, String>> = listOf(
         WITHOUT to WITHOUT,
         RUSSIA to RUSSIAN,
         US to ENGLISH,
     )
-    MenuPopUpItem(alignment = Alignment.BottomCenter, onDismiss = onDismiss) {
+    val visible = state.popUpMenuShowed
+    MenuPopUpItem(alignment = Alignment.BottomCenter, onDismiss = onDismiss, visible = visible) {
         Column(
             modifier = Modifier
                 .fillMaxSize()

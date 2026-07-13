@@ -7,7 +7,7 @@ sealed interface NewsSearchIntent : UiIntent {
 
     object FilterMenuClick : NewsSearchIntent
 
-    class SaveFilterParams(val paramsFilter: ParamsFilter, val isDarkTheme: Boolean) : NewsSearchIntent
+    class SaveFilterParams(val paramsFilter: ParamsFilter) : NewsSearchIntent
 
     class SearchNews(val param: String) : NewsSearchIntent
 

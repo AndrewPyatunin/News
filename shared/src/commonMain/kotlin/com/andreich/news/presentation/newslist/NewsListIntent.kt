@@ -15,6 +15,8 @@ sealed interface NewsListIntent : UiIntent {
 
     object ShowMenu : NewsListIntent
 
+    object HideMenu : NewsListIntent
+
     class ConfigureSettings(val userSettings: UserSettings) : NewsListIntent
 
     class NewsClick(val newsId: Int) : NewsListIntent

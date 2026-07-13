@@ -112,7 +112,7 @@ class NewsListViewModel(
                 is NewsListIntent.NewsClick ->
                     _events.emit(NavigateTo(intent.newsId))
 
-                NewsListIntent.ShowMenu -> {
+                is NewsListIntent.ShowMenu -> {
                     _state.update {
                         it.copy(menuExpanded = !it.menuExpanded)
                     }
@@ -128,6 +128,9 @@ class NewsListViewModel(
                 is NewsListIntent.LoadConfiguration -> loadUserSettingsUseCase()
                 is NewsListIntent.ObserveNews -> observeNews()
                 is NewsListIntent.UpdateNews -> updateNews()
+                is NewsListIntent.HideMenu -> {
+                    _state.update { it.copy(menuExpanded = false) }
+                }
             }
         }
 

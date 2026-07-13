@@ -34,13 +34,13 @@ class SettingsRepositoryImpl(
 
     override suspend fun updateSettings(userSettings: UserSettings) {
         dataStore.edit { prefs ->
-            prefs[COUNTRY] = userSettings.country?.name?.uppercase() ?: Country.RU.name
+            prefs[COUNTRY] = userSettings.country?.name?.uppercase() ?: prefs[COUNTRY] ?: Country.RU.name
         }
         dataStore.edit { prefs ->
-            prefs[LANGUAGE] = userSettings.language?.name?.uppercase() ?: Language.RU.name
+            prefs[LANGUAGE] = userSettings.language?.name?.uppercase() ?: prefs[LANGUAGE] ?: Language.RU.name
         }
         dataStore.edit {
-            it[DARK_THEME] = userSettings.darkTheme == true
+            it[DARK_THEME] = (userSettings.darkTheme ?: it[DARK_THEME]) == true
         }
     }
 }
