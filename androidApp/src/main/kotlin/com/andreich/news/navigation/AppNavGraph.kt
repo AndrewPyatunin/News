@@ -8,6 +8,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 
 @Composable
 fun AppNavGraph(
@@ -52,9 +54,13 @@ fun AppNavGraph(
             ) + fadeOut()
         }
     ) {
-        homeNavGraph(newsListContent, newsDetailsContent)
-        searchNavGraph(newsDetailsContent, newsSearchContent)
-        mapNavGraph(newsDetailsContent, newsMapContent, newsCityListContent)
-        favoriteNavGraph(newsDetailsContent, newsFavoriteContent)
+        homeNavGraph(newsListContent)
+        searchNavGraph(newsSearchContent)
+        mapNavGraph(newsMapContent, newsCityListContent)
+        favoriteNavGraph(newsFavoriteContent)
+        composable<NavDestinations.NewsDetails> { backStackEntry ->
+            val args = backStackEntry.toRoute<NavDestinations.NewsDetails>()
+            newsDetailsContent(args.id)
+        }
     }
 }

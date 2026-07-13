@@ -25,7 +25,6 @@ kotlin {
        namespace = "com.andreich.news.shared"
        compileSdk = libs.versions.android.compileSdk.get().toInt()
        minSdk = libs.versions.android.minSdk.get().toInt()
-    
        compilerOptions {
            jvmTarget = JvmTarget.JVM_11
        }
@@ -43,6 +42,11 @@ kotlin {
             implementation(libs.ktor.client.okhttp)
             implementation(libs.coil.network.okhttp3)
         }
+        androidUnitTest.dependencies {
+            implementation(libs.androidx.testExt.junit)
+            implementation(libs.androidx.test.runner)
+            implementation(libs.androidx.test.core)
+        }
         commonMain.dependencies {
             implementation(libs.androidx.datastore.preferences)
             implementation(libs.compose.runtime)
@@ -59,9 +63,14 @@ kotlin {
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.client.logging)
             implementation(libs.ktor.serialization.kotlinx.json)
+            implementation(libs.kotlinx.collections.immutable)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+            implementation(libs.kotlin.mockito)
+            implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.kotlinx.coroutines.android)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
