@@ -2,6 +2,7 @@ package com.andreich.news.ext
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
@@ -48,8 +49,8 @@ fun MenuPopUpItem(
         ) {
             AnimatedVisibility(
                 visibleState = transitionState,
-                enter = fadeIn() + slideInVertically(),
-                exit = fadeOut() + slideOutVertically()
+                enter = fadeIn(animationSpec = tween(350)) + slideInVertically(animationSpec = tween(350)),
+                exit = fadeOut(animationSpec = tween(350)) + slideOutVertically(animationSpec = tween(350))
             ) {
                 Card(
                     modifier = modifier

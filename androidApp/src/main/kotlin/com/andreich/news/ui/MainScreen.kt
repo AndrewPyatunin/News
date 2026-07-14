@@ -76,14 +76,17 @@ fun MainScreen() {
                     }
                 }
             }, actions = {
-                IconButton(onClick = {
-                    appBarState.value.onFilterClick?.let { it() }
-                }) {
-                    Icon(
-                        painterResource(R.drawable.menu_24px),
-                        contentDescription = null
-                    )
+                if (currentScreen.value?.destination?.hasRoute<NavDestinations.NewsList>() == true) {
+                    IconButton(onClick = {
+                        appBarState.value.onFilterClick?.let { it() }
+                    }) {
+                        Icon(
+                            painterResource(R.drawable.menu_24px),
+                            contentDescription = null
+                        )
+                    }
                 }
+
             })
         },
         bottomBar = {
@@ -94,7 +97,7 @@ fun MainScreen() {
                         NavigationItem.Home, NavigationItem.Search, NavigationItem.NewsMap,
                         NavigationItem.NewsFavorite
                     )
-                navItems.forEachIndexed { index, item ->
+                navItems.forEachIndexed { _, item ->
                     val selected = navBackStackEntry?.destination?.hierarchy?.any {
                         it.hasRoute(item.destination::class)
                     } ?: false
