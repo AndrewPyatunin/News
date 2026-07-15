@@ -143,8 +143,8 @@ fun NewsListScreen(
     val fabVisual = remember { mutableStateOf(false) }
     val showFab by remember(Unit) {
         derivedStateOf {
-            lazyListState.lastScrolledBackward && fabVisual.value
-
+            (lazyListState.lastScrolledBackward) && fabVisual.value
+                    && lazyListState.firstVisibleItemIndex >= 1
         }
     }
     LaunchedEffect(lazyListState) {
